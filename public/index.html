@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamer Reservering</title>
+    <link rel="stylesheet" href="style.css">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.14/index.global.min.js'></script>
+    <link rel="icon" href="images/logo.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="images/logo.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <img src="images/logo.ico" alt="Logo" class="page-logo">
+        <h1>Kamer Reservering</h1>
+        <form id="reservation-form">
+            <div class="form-group">
+                <label for="contactperson">Contactpersoon:</label>
+                <input type="text" id="contactperson" name="contactperson" required>
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="title">Titel:</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="start-date">Startdatum en -tijd:</label>
+                <input type="datetime-local" id="start-date" name="start-date" required>
+            </div>
+            <div class="form-group">
+                <label for="end-date">Einddatum en -tijd:</label>
+                <input type="datetime-local" id="end-date" name="end-date" required>
+            </div>
+            <div class="form-group">
+                <label for="location">Locatie:</label>
+                <select id="location" name="location" required>
+                    <option value="De Peel 4p">De Peel 4p</option>
+                    <option value="De Kasteeltuin 8p">De Kasteeltuin 8p</option>
+                    <option value="Auditorium">Auditorium</option>
+                    <option value="Huiskamer">Huiskamer</option>
+                    <option value="De Windmolen 10p">De Windmolen 10p</option>
+                </select>
+            </div>
+            <button type="submit">Reserveer</button>
+        </form>
+        <hr>
+        <div id="calendar"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

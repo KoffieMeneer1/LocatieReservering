@@ -1,0 +1,115 @@
+import express from 'express';
+import path from 'path';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Statische bestanden serveren vanuit de 'public' map
+app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.json());
+
+// Supabase initialisatie
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// API routes
+
+// GET alle reserveringen
+app.get('/api/reservations', async (req, res) => {
+    const { data, error } = await supabase.from('Reserveringen').select('Titel, Start_Date_Time, End_Date_Time, Locatie');
+    if (error) {
+        console.error('Supabase GET error:', error);
+        return res.status(500).json({ error: error.message });
+    }
+    res.json(data);
+});
+
+// POST een nieuwe reservering
+app.post('/api/reservations', async (req, res) => {
+    console.log('Received POST request with body:', req.body);
+    const { contactperson, email, title, 'start-date': startDate, 'end-date': endDate, location } = req.body;
+
+    // Valideer verplichte velden
+    if (!contactperson || !title || !startDate || !endDate || !location) {
+        return res.status(400).json({ error: 'Alle velden zijn verplicht.' });
+    }
+
+    // Maak de reservering direct in de Reserveringen tabel
+    const { data: reservation, error: reservationError } = await supabase
+        .from('Reserveringen')
+        .insert([
+            { 
+                Contactpersoon: contactperson, 
+                E_mail: email,
+                Titel: title,
+                Start_Date_Time: new Date(startDate), 
+                End_Date_Time: new Date(endDate),
+                Locatie: location 
+            }
+        ])
+        .select()
+        .single();
+
+    if (reservationError) {
+        return res.status(500).json({ error: reservationError.message });
+    }
+
+    res.status(201).json(reservation);
+});
+
+// DELETE een reservering
+app.delete('/api/reservations', async (req, res) => {
+    const { start, end, location } = req.query;
+    const contactperson = req.headers['x-contact-person'] as string;
+
+    if (!contactperson) {
+        return res.status(400).json({ error: 'Contactpersoon naam is verplicht voor verificatie.' });
+    }
+    if (!start || !end || !location) {
+        return res.status(400).json({ error: 'Starttijd, eindtijd en locatie zijn verplicht om een reservering te identificeren.' });
+    }
+
+    // Bouw de query om de specifieke reservering te vinden
+    const matchConditions = {
+        Start_Date_Time: start,
+        End_Date_Time: end,
+        Locatie: location
+    };
+
+    // Verifieer eerst de contactpersoon
+    const { data: reservation, error: fetchError } = await supabase
+        .from('Reserveringen')
+        .select('Contactpersoon')
+        .match(matchConditions)
+        .single();
+
+    if (fetchError || !reservation) {
+        return res.status(404).json({ error: 'Reservering niet gevonden.' });
+    }
+
+    if (reservation.Contactpersoon !== contactperson) {
+        return res.status(403).json({ error: 'Verificatie van contactpersoon mislukt.' });
+    }
+
+    // Verwijder de reservering
+    const { error: deleteError } = await supabase
+        .from('Reserveringen')
+        .delete()
+        .match(matchConditions);
+
+    if (deleteError) {
+        return res.status(500).json({ error: deleteError.message });
+    }
+
+    res.status(204).send();
+});
+
+
+app.listen(port, () => {
+    console.log(`Server draait op http://localhost:${port}`);
+});
