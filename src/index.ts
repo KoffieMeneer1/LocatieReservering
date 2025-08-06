@@ -39,6 +39,38 @@ app.post('/api/reservations', async (req, res) => {
         return res.status(400).json({ error: 'Alle velden zijn verplicht.' });
     }
 
+    // Valideer de boekingstijd
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const startDay = start.getDay();
+    const startHour = start.getHours();
+    const endHour = end.getHours();
+    const endMinutes = end.getMinutes();
+
+    if (startDay === 0 || startDay === 6) { // 0 = Zondag, 6 = Zaterdag
+        return res.status(400).json({ error: 'Reserveringen zijn alleen toegestaan op weekdagen en overdag.' });
+    }
+
+    if (startHour < 9 || endHour > 18 || (endHour === 18 && endMinutes > 0)) {
+        return res.status(400).json({ error: 'Reserveringen zijn alleen toegestaan tussen 09:00 en 18:00.' });
+    }
+
+    // Controleer op overlappende reserveringen
+    const { data: existingReservations, error: overlapError } = await supabase
+        .from('Reserveringen')
+        .select('Titel')
+        .eq('Locatie', location)
+        .or(`and(Start_Date_Time.lte.${endDate},End_Date_Time.gte.${endDate}),and(Start_Date_Time.lte.${startDate},End_Date_Time.gte.${startDate}),and(Start_Date_Time.gte.${startDate},End_Date_Time.lte.${endDate})`);
+
+    if (overlapError) {
+        console.error('Error checking for overlapping reservations:', overlapError);
+        return res.status(500).json({ error: 'Fout bij het controleren op bestaande reserveringen.' });
+    }
+
+    if (existingReservations && existingReservations.length > 0) {
+        return res.status(409).json({ error: 'Deze locatie & tijd is al gereserveerd, kies een andere tijd of locatie.' });
+    }
+
     // Maak de reservering direct in de Reserveringen tabel
     const { data: reservation, error: reservationError } = await supabase
         .from('Reserveringen')

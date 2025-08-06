@@ -1,42 +1,102 @@
 document.addEventListener('DOMContentLoaded', () => {
     const reservationForm = document.getElementById('reservation-form');
-    const reservationsList = document.getElementById('reservations-list');
+    const calendarEl = document.getElementById('calendar');
 
-    // Functie om reserveringen op te halen en weer te geven
-    const fetchReservations = async () => {
-        try {
-            const response = await fetch('/api/reservations');
-            if (!response.ok) {
-                throw new Error('Kon reserveringen niet ophalen.');
-            }
-            const reservations = await response.json();
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source', // Required for resource views
+        initialView: 'resourceTimelineWeek',
+        locale: 'nl',
+        weekends: false, // Hide Saturday and Sunday
+        firstDay: 1, // Start the week on Monday
+        headerToolbar: {
+            left: 'prev,next',
+            center: 'title',
+            right: 'resourceTimelineDay,resourceTimelineWeek'
+        },
+        buttonText: {
+            resourceTimelineDay: 'dag',
+            resourceTimelineWeek: 'week'
+        },
+        dayHeaderFormat: { weekday: 'long', month: 'numeric', day: 'numeric', omitCommas: true },
+        slotLabelFormat: [
+            { weekday: 'long', month: 'numeric', day: 'numeric' }, // Top level: Maandag 4/8
+            { hour: '2-digit', minute: '2-digit', hour12: false } // Bottom level: 09:00
+        ],
+        slotMinTime: '09:00:00', // Start day at 9:00 AM
+        slotMaxTime: '18:00:00', // End day at 6 PM
+        height: 'auto',
+        resourceAreaHeaderContent: 'Locatie',
+        resources: [
+            { id: 'Auditorium', title: 'Auditorium' },
+            { id: 'De Windmolen 10p', title: 'De Windmolen 10p' },
+            { id: 'De Kasteeltuin 8p', title: 'De Kasteeltuin 8p' },
+            { id: 'De Peel 4p', title: 'De Peel 4p' },
+            { id: 'Huiskamer', title: 'Huiskamer' }
+        ],
+        events: '/api/reservations',
+        eventDataTransform: function(eventData) {
+            // Map database fields to FullCalendar fields
+            return {
+                title: eventData.Titel,
+                start: eventData.Start_Date_Time,
+                end: eventData.End_Date_Time,
+                resourceId: eventData.Locatie, // Assign event to a resource
+                extendedProps: {
+                    // Store original ISO strings for the delete function
+                    start_utc: eventData.Start_Date_Time,
+                    end_utc: eventData.End_Date_Time,
+                    location: eventData.Locatie
+                }
+            };
+        },
+        eventClick: function(info) {
+            const { title, extendedProps, start, end } = info.event;
+            const { location, start_utc, end_utc } = extendedProps;
             
-            reservationsList.innerHTML = ''; // Leeg de lijst voordat je opnieuw opbouwt
+            // Verwijder eventuele bestaande kaarten
+            const existingCard = document.querySelector('.reservation-card');
+            if (existingCard) {
+                document.body.removeChild(existingCard);
+            }
 
-            reservations.forEach(res => {
-                const reservationEl = document.createElement('div');
-                reservationEl.classList.add('reservation');
-                reservationEl.innerHTML = `
-                    <div>
-                        <strong>Titel:</strong> ${res.Titel} <br>
-                        <strong>Start:</strong> ${new Date(res.Start_Date_Time).toLocaleString()} <br>
-                        <strong>Eind:</strong> ${new Date(res.End_Date_Time).toLocaleString()} <br>
-                        <strong>Locatie:</strong> ${res.Locatie}
-                    </div>
-                    <div class="actions">
-                        <button class="delete-btn" 
-                            data-start="${res.Start_Date_Time}" 
-                            data-end="${res.End_Date_Time}" 
-                            data-location="${res.Locatie}">Verwijder</button>
-                    </div>
-                `;
-                reservationsList.appendChild(reservationEl);
-            });
-        } catch (error) {
-            console.error(error);
-            reservationsList.innerHTML = '<p>Kon reserveringen niet laden.</p>';
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+
+            const cardContent = `
+                <h3>${title}</h3>
+                <p><strong>Start:</strong> ${start.toLocaleString('nl-NL', options)}</p>
+                <p><strong>Eind:</strong> ${end.toLocaleString('nl-NL', options)}</p>
+                <p><strong>Locatie:</strong> ${location}</p>
+            `;
+
+            const card = document.createElement('div');
+            card.className = 'reservation-card';
+            card.innerHTML = cardContent;
+
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'card-buttons';
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Verwijderen';
+            deleteButton.onclick = () => {
+                // De deleteReservation functie vraagt om bevestiging en contactpersoon
+                deleteReservation(start_utc, end_utc, location);
+                document.body.removeChild(card);
+            };
+
+            const closeButton = document.createElement('button');
+            closeButton.textContent = 'Sluiten';
+            closeButton.onclick = () => {
+                document.body.removeChild(card);
+            };
+
+            buttonContainer.appendChild(deleteButton);
+            buttonContainer.appendChild(closeButton);
+            card.appendChild(buttonContainer);
+            document.body.appendChild(card);
         }
-    };
+    });
+
+    calendar.render();
 
     // Functie om een reservering te verwijderen
     const deleteReservation = async (start, end, location) => {
@@ -47,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+            // The start/end times are already ISO strings from the event data
             const params = new URLSearchParams({ start, end, location });
             const response = await fetch(`/api/reservations?${params.toString()}`, {
                 method: 'DELETE',
@@ -57,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 alert('Reservering succesvol verwijderd.');
-                fetchReservations(); // Herlaad de lijst
+                calendar.refetchEvents(); // Herlaad de evenementen
             } else {
                 const result = await response.json();
                 alert(`Fout: ${result.error}`);
@@ -72,7 +133,15 @@ document.addEventListener('DOMContentLoaded', () => {
     reservationForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(reservationForm);
-        const data = Object.fromEntries(formData.entries());
+        const data = {
+            contactperson: formData.get('contactperson'),
+            email: formData.get('email'),
+            title: formData.get('title'),
+            'start-date': formData.get('start-date'),
+            'end-date': formData.get('end-date'),
+            location: formData.get('location')
+        };
+
 
         try {
             const response = await fetch('/api/reservations', {
@@ -86,28 +155,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 alert('Reservering succesvol aangemaakt!');
                 reservationForm.reset();
-                fetchReservations(); // Herlaad de lijst
+                calendar.refetchEvents(); // Herlaad de evenementen
             } else {
                 const result = await response.json();
-                alert(`Fout: ${result.error}`);
+                if (result.error && result.error.includes('duplicate key value violates unique constraint')) {
+                    alert('Fout: Deze locatie & tijd is al gereserveerd, kies een andere tijd of locatie.');
+                } else {
+                    alert(`Fout: ${result.error}`);
+                }
             }
         } catch (error) {
             console.error('Fout bij aanmaken:', error);
             alert('Kon de reservering niet aanmaken.');
         }
     });
-
-    // Event listener voor de verwijder-knoppen (event delegation)
-    reservationsList.addEventListener('click', (e) => {
-        if (e.target && e.target.classList.contains('delete-btn')) {
-            const button = e.target;
-            const start = button.getAttribute('data-start');
-            const end = button.getAttribute('data-end');
-            const location = button.getAttribute('data-location');
-            deleteReservation(start, end, location);
-        }
-    });
-
-    // Haal de reserveringen op bij het laden van de pagina
-    fetchReservations();
 });
