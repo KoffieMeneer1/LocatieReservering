@@ -133,12 +133,17 @@ document.addEventListener('DOMContentLoaded', () => {
     reservationForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(reservationForm);
+        
+        // Converteer de lokale datumtijd naar volledige ISO strings (UTC)
+        const startDate = new Date(formData.get('start-date')).toISOString();
+        const endDate = new Date(formData.get('end-date')).toISOString();
+
         const data = {
             contactperson: formData.get('contactperson'),
             email: formData.get('email'),
             title: formData.get('title'),
-            'start-date': formData.get('start-date'),
-            'end-date': formData.get('end-date'),
+            'start-date': startDate,
+            'end-date': endDate,
             location: formData.get('location')
         };
 
