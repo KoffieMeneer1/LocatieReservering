@@ -19,6 +19,8 @@
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/node": "^24.2.0",
+    "@types/strip-bom": "^3.0.0",
+    "@types/strip-json-comments": "^0.0.30",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
