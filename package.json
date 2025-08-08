@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=23.0.0"
   },
   "type": "commonjs",
   "devDependencies": {
@@ -29,6 +29,7 @@
   },
   "overrides": {
   "uri-js": "^4.4.1",
-  "ajv": "^8.17.1"
+  "ajv": "^8.17.1",
+  "whatwg-url": "^13.0.0"
 }
 }
