@@ -3,31 +3,32 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
-"scripts": {
-  "start": "node dist/index.js",
-  "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-  "build": "tsc",
-  "postinstall": "npm run build"
-},
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
+    "build": "tsc",
+    "postinstall": "npm run build"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "engines": {
-    "node": "^24.5.0"
+    "node": "^24.4.1"
   },
   "type": "commonjs",
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/node": "^24.2.0",
-    "ts-node-dev": "^2.0.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.53.0",
+    "@supabase/supabase-js": "^2.54.0",
     "dotenv": "^17.2.1",
     "express": "^5.1.0"
   },
-   "overrides": {
+  "overrides": {
     "@supabase/node-fetch": {
       "whatwg-url": "^13",
       "uri-js": "^4.4.1",
