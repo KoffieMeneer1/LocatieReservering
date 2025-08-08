@@ -1,2 +1,2 @@
 [phases.setup]
-nixPkgs = ["pkgs.nodejs_24_x"]
+nixPkgs = ["nodejs_24"]
