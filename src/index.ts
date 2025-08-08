@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = parseInt(process.env.PORT || '3000', 10);
 
 // Statische bestanden serveren vanuit de 'public' map
 app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -142,6 +142,10 @@ app.delete('/api/reservations', async (req, res) => {
 });
 
 
-app.listen(port, () => {
-    console.log(`Server draait op http://localhost:${port}`);
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server draait op http://0.0.0.0:${port}`);
 });
