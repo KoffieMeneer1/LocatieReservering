@@ -32,7 +32,7 @@ app.get('/api/reservations', async (req, res) => {
 // POST een nieuwe reservering
 app.post('/api/reservations', async (req, res) => {
     console.log('Received POST request with body:', req.body);
-    const { contactperson, email, title, 'start-date': startDate, 'end-date': endDate, location } = req.body;
+    const { contactperson, title, 'start-date': startDate, 'end-date': endDate, location } = req.body;
 
     // Valideer verplichte velden
     if (!contactperson || !title || !startDate || !endDate || !location) {
@@ -77,7 +77,6 @@ app.post('/api/reservations', async (req, res) => {
         .insert([
             { 
                 Contactpersoon: contactperson, 
-                E_mail: email,
                 Titel: title,
                 Start_Date_Time: new Date(startDate), 
                 End_Date_Time: new Date(endDate),

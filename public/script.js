@@ -140,7 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = {
             contactperson: formData.get('contactperson'),
-            email: formData.get('email'),
             title: formData.get('title'),
             'start-date': startDate,
             'end-date': endDate,
