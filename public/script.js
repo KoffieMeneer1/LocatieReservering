@@ -36,10 +36,16 @@ document.addEventListener('DOMContentLoaded', () => {
         events: '/api/reservations',
         eventDataTransform: function(eventData) {
             // Map database fields to FullCalendar fields
+            function toLocalDate(dateTimeStr) {
+                const [date, time] = dateTimeStr.split(' ');
+                const [year, month, day] = date.split('-');
+                const [hour, minute, second] = time.split(':');
+                return new Date(year, month - 1, day, hour, minute, second);
+            }
             return {
                 title: eventData.Titel,
-                start: eventData.Start_DT,
-                end: eventData.End_DT,
+                start: toLocalDate(eventData.Start_DT),
+                end: toLocalDate(eventData.End_DT),
                 resourceId: eventData.Locatie,
                 extendedProps: {
                     start_utc: eventData.Start_DT,
@@ -107,8 +113,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // The start/end times are already ISO strings from the event data
-            const params = new URLSearchParams({ start, end, location });
+            // Gebruik 'locatie' als parameternaam voor backend
+            const params = new URLSearchParams({ start, end, locatie: location });
             const response = await fetch(`/api/reservations?${params.toString()}`, {
                 method: 'DELETE',
                 headers: {
