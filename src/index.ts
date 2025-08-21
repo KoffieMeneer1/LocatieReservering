@@ -47,8 +47,8 @@ app.get('/api/reservations', (req: Request, res: Response) => {
 
 // POST een nieuwe reservering
 app.post('/api/reservations', (req: Request, res: Response) => {
-  const { contactperson, title, startDate, endDate, location } = req.body;
-  if (!contactperson || !title || !startDate || !endDate || !location) {
+  const { contactperson, title, Start_DT, End_DT, location } = req.body;
+  if (!contactperson || !title || !Start_DT || !End_DT || !location) {
     return res.status(400).json({ error: 'Alle velden zijn verplicht.' });
   }
 
@@ -60,7 +60,7 @@ app.post('/api/reservations', (req: Request, res: Response) => {
        (Start_DT <= ? AND End_DT >= ?) OR
        (Start_DT >= ? AND End_DT <= ?)
      )`,
-    [location, endDate, endDate, startDate, startDate, startDate, endDate],
+  [location, End_DT, End_DT, Start_DT, Start_DT, Start_DT, End_DT],
     (error: Error | null, overlap: any) => {
       if (error) {
         console.error('MySQL overlap error:', error);
@@ -74,7 +74,7 @@ app.post('/api/reservations', (req: Request, res: Response) => {
       connection.query(
         `INSERT INTO locatiereserveren (Contactpersoon, Titel, Start_DT, End_DT, Locatie)
          VALUES (?, ?, ?, ?, ?)`,
-        [contactperson, title, startDate, endDate, location],
+        [contactperson, title, Start_DT, End_DT, location],
         (error: Error | null) => {
           if (error) {
             console.error('MySQL POST error:', error);

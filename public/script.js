@@ -40,12 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: eventData.Titel,
                 start: eventData.Start_DT,
                 end: eventData.End_DT,
-                resourceId: eventData.Locatie, // Assign event to a resource
+                resourceId: eventData.Locatie,
                 extendedProps: {
-                    // Store original ISO strings for the delete function
                     start_utc: eventData.Start_DT,
                     end_utc: eventData.End_DT,
-                    location: eventData.Locatie
+                    location: eventData.Locatie,
+                    contactperson: eventData.Contactpersoon
                 }
             };
         },
