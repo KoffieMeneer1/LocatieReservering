@@ -34,18 +34,36 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'Huiskamer', title: 'Huiskamer' }
         ],
         events: '/api/reservations',
-        eventDataTransform: function(eventData) {
-            // Map database fields to FullCalendar fields
-            function toLocalDate(dateTimeStr) {
-                if (!dateTimeStr || typeof dateTimeStr !== 'string' || !dateTimeStr.includes(' ')) return null;
-                const [date, time] = dateTimeStr.split(' ');
-                if (!date || !time) return null;
-                const [year, month, day] = date.split('-');
-                const [hour, minute, second] = time.split(':');
-                if (!year || !month || !day || !hour || !minute || !second) return null;
-                return new Date(year, month - 1, day, hour, minute, second);
-            }
-        },
+        
+eventDataTransform: function(eventData) {
+    function toLocalDate(dateTimeStr) {
+        if (!dateTimeStr || typeof dateTimeStr !== 'string' || !dateTimeStr.includes(' ')) return null;
+        const [date, time] = dateTimeStr.split(' ');
+        if (!date || !time) return null;
+        const [year, month, day] = date.split('-');
+        const [hour, minute, second] = time.split(':');
+        if (!year || !month || !day || !hour || !minute || !second) return null;
+        return new Date(year, month - 1, day, hour, minute, second);
+    }
+
+    const start = toLocalDate(eventData.Start_DT);
+    const end = toLocalDate(eventData.End_DT);
+    if (!start || !end) return null;
+
+    return {
+        title: eventData.Titel,
+        start,
+        end,
+        resourceId: eventData.Locatie,
+        extendedProps: {
+            start_utc: eventData.Start_DT,
+            end_utc: eventData.End_DT,
+            location: eventData.Locatie,
+            contactperson: eventData.Contactpersoon
+        }
+    };
+},
+
         eventClick: function(info) {
             const { title, extendedProps, start, end } = info.event;
             const { location, start_utc, end_utc } = extendedProps;
