@@ -37,9 +37,12 @@ document.addEventListener('DOMContentLoaded', () => {
         eventDataTransform: function(eventData) {
             // Map database fields to FullCalendar fields
             function toLocalDate(dateTimeStr) {
+                if (!dateTimeStr || typeof dateTimeStr !== 'string' || !dateTimeStr.includes(' ')) return null;
                 const [date, time] = dateTimeStr.split(' ');
+                if (!date || !time) return null;
                 const [year, month, day] = date.split('-');
                 const [hour, minute, second] = time.split(':');
+                if (!year || !month || !day || !hour || !minute || !second) return null;
                 return new Date(year, month - 1, day, hour, minute, second);
             }
             return {
