@@ -35,24 +35,13 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         events: '/api/reservations',
         
+// ISO STRING
 eventDataTransform: function(eventData) {
     console.log('Event ontvangen:', eventData);
-    // Map database fields to FullCalendar fields
-    function toLocalDate(dateTimeStr) {
-        if (!dateTimeStr || typeof dateTimeStr !== 'string' || !dateTimeStr.includes(' ')) return null;
-        const [date, time] = dateTimeStr.split(' ');
-        if (!date || !time) return null;
-        const [year, month, day] = date.split('-');
-        const [hour, minute, second] = time.split(':');
-        if (!year || !month || !day || !hour || !minute || !second) return null;
-        return new Date(year, month - 1, day, hour, minute, second);
-    }
-    const start = toLocalDate(eventData.Start_DT);
-    const end = toLocalDate(eventData.End_DT);
     return {
         title: eventData.Titel,
-        start,
-        end,
+        start: eventData.Start_DT,
+        end: eventData.End_DT,
         resourceId: eventData.Locatie,
         extendedProps: {
             start_utc: eventData.Start_DT,
