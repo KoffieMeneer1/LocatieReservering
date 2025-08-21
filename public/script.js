@@ -38,13 +38,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Map database fields to FullCalendar fields
             return {
                 title: eventData.Titel,
-                start: eventData.Start_Date_Time,
-                end: eventData.End_Date_Time,
+                start: eventData.Start_DT,
+                end: eventData.End_DT,
                 resourceId: eventData.Locatie, // Assign event to a resource
                 extendedProps: {
                     // Store original ISO strings for the delete function
-                    start_utc: eventData.Start_Date_Time,
-                    end_utc: eventData.End_Date_Time,
+                    start_utc: eventData.Start_DT,
+                    end_utc: eventData.End_DT,
                     location: eventData.Locatie
                 }
             };
