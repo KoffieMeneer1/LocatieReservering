@@ -77,8 +77,8 @@ eventClick: function(info) {
 
     const cardContent = `
         <h3>${title}</h3>
-        <p><strong>Start:</strong> ${new Date(new Date(start_utc).getTime() - 2 * 60 * 60 * 1000)}</p>
-        <p><strong>Eind:</strong> ${new Date(new Date(end_utc).getTime() - 2 * 60 * 60 * 1000)}</p>
+        <p><strong>Start:</strong> ${new Date(new Date(start_utc).getTime() - 2 * 60 * 60 * 1000).toLocaleString('nl-NL', options)}</p>
+        <p><strong>Eind:</strong> ${new Date(new Date(end_utc).getTime() - 2 * 60 * 60 * 1000).toLocaleString('nl-NL', options)}</p>
         <p><strong>Locatie:</strong> ${location}</p>
         <p><strong>Contactpersoon:</strong> ${contactperson || 'Onbekend'}</p>
     `;
