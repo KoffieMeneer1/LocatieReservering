@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const calendarEl = document.getElementById('calendar');
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
+        timeZone: 'Europe/Amsterdam',
         schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source', // Required for resource views
         initialView: 'resourceTimelineWeek',
         locale: 'nl',
