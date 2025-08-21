@@ -47,8 +47,8 @@ app.get('/api/reservations', (req: Request, res: Response) => {
 
 // POST een nieuwe reservering
 app.post('/api/reservations', (req: Request, res: Response) => {
-  const { contactperson, title, Start_DT, End_DT, location } = req.body;
-  if (!contactperson || !title || !Start_DT || !End_DT || !location) {
+  const { Contactpersoon, Titel, Start_DT, End_DT, Locatie } = req.body;
+  if (!Contactpersoon || !Titel || !Start_DT || !End_DT || !Locatie) {
     return res.status(400).json({ error: 'Alle velden zijn verplicht.' });
   }
 
@@ -60,7 +60,7 @@ app.post('/api/reservations', (req: Request, res: Response) => {
        (Start_DT <= ? AND End_DT >= ?) OR
        (Start_DT >= ? AND End_DT <= ?)
      )`,
-  [location, End_DT, End_DT, Start_DT, Start_DT, Start_DT, End_DT],
+  [Locatie, End_DT, End_DT, Start_DT, Start_DT, Start_DT, End_DT],
     (error: Error | null, overlap: any) => {
       if (error) {
         console.error('MySQL overlap error:', error);
@@ -74,7 +74,7 @@ app.post('/api/reservations', (req: Request, res: Response) => {
       connection.query(
         `INSERT INTO locatiereserveren (Contactpersoon, Titel, Start_DT, End_DT, Locatie)
          VALUES (?, ?, ?, ?, ?)`,
-        [contactperson, title, Start_DT, End_DT, location],
+  [Contactpersoon, Titel, Start_DT, End_DT, Locatie],
         (error: Error | null) => {
           if (error) {
             console.error('MySQL POST error:', error);
@@ -89,9 +89,9 @@ app.post('/api/reservations', (req: Request, res: Response) => {
 
 // DELETE een reservering
 app.delete('/api/reservations', (req: Request, res: Response) => {
-  const { start, end, location } = req.query;
-  const contactperson = req.headers['x-contact-person'];
-  if (!contactperson || !start || !end || !location) {
+  const { start, end, locatie } = req.query;
+  const contactpersoon = req.headers['x-contact-person'];
+  if (!contactpersoon || !start || !end || !locatie) {
     return res.status(400).json({ error: 'Alle velden zijn verplicht.' });
   }
 
@@ -99,7 +99,7 @@ app.delete('/api/reservations', (req: Request, res: Response) => {
   connection.query(
     `SELECT Contactpersoon FROM locatiereserveren
      WHERE Start_DT = ? AND End_DT = ? AND Locatie = ?`,
-    [start, end, location],
+  [start, end, locatie],
     (error: Error | null, rows: any) => {
       if (error) {
         console.error('MySQL DELETE error:', error);
@@ -108,7 +108,7 @@ app.delete('/api/reservations', (req: Request, res: Response) => {
       if (rows.length === 0) {
         return res.status(404).json({ error: 'Reservering niet gevonden.' });
       }
-      if (rows[0].Contactpersoon !== contactperson) {
+      if (rows[0].Contactpersoon !== contactpersoon) {
         return res.status(403).json({ error: 'Verificatie van contactpersoon mislukt.' });
       }
 
@@ -116,7 +116,7 @@ app.delete('/api/reservations', (req: Request, res: Response) => {
       connection.query(
         `DELETE FROM locatiereserveren
          WHERE Start_DT = ? AND End_DT = ? AND Locatie = ?`,
-        [start, end, location],
+  [start, end, locatie],
         (error: Error | null) => {
           if (error) {
             console.error('MySQL DELETE error:', error);
