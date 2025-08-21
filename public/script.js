@@ -53,52 +53,66 @@ eventDataTransform: function(eventData) {
     };
 },
 
-        eventClick: function(info) {
-            const { title, extendedProps, start, end } = info.event;
-            const { location, start_utc, end_utc } = extendedProps;
-            
-            // Verwijder eventuele bestaande kaarten
-            const existingCard = document.querySelector('.reservation-card');
-            if (existingCard) {
-                document.body.removeChild(existingCard);
-            }
 
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+eventClick: function(info) {
+    const { title, extendedProps } = info.event;
+    const { location, start_utc, end_utc, contactperson } = extendedProps;
 
-            const cardContent = `
-                <h3>${title}</h3>
-                <p><strong>Start:</strong> ${start.toLocaleString('nl-NL', options)}</p>
-                <p><strong>Eind:</strong> ${end.toLocaleString('nl-NL', options)}</p>
-                <p><strong>Locatie:</strong> ${location}</p>
-            `;
+    // Verwijder eventuele bestaande kaarten
+    const existingCard = document.querySelector('.reservation-card');
+    if (existingCard) {
+        document.body.removeChild(existingCard);
+    }
 
-            const card = document.createElement('div');
-            card.className = 'reservation-card';
-            card.innerHTML = cardContent;
+    // Zet UTC om naar Nederlandse tijd
+    const options = {
+        timeZone: 'Europe/Amsterdam',
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    };
 
-            const buttonContainer = document.createElement('div');
-            buttonContainer.className = 'card-buttons';
+    const startNL = new Date(start_utc).toLocaleString('nl-NL', options);
+    const endNL = new Date(end_utc).toLocaleString('nl-NL', options);
 
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Verwijderen';
-            deleteButton.onclick = () => {
-                // De deleteReservation functie vraagt om bevestiging en contactpersoon
-                deleteReservation(start_utc, end_utc, location);
-                document.body.removeChild(card);
-            };
+    const cardContent = `
+        <h3>${title}</h3>
+        <p><strong>Start:</strong> ${startNL}</p>
+        <p><strong>Eind:</strong> ${endNL}</p>
+        <p><strong>Locatie:</strong> ${location}</p>
+        <p><strong>Contactpersoon:</strong> ${contactperson || 'Onbekend'}</p>
+    `;
 
-            const closeButton = document.createElement('button');
-            closeButton.textContent = 'Sluiten';
-            closeButton.onclick = () => {
-                document.body.removeChild(card);
-            };
+    const card = document.createElement('div');
+    card.className = 'reservation-card';
+    card.innerHTML = cardContent;
 
-            buttonContainer.appendChild(deleteButton);
-            buttonContainer.appendChild(closeButton);
-            card.appendChild(buttonContainer);
-            document.body.appendChild(card);
-        }
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'card-buttons';
+
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Verwijderen';
+    deleteButton.onclick = () => {
+        deleteReservation(start_utc, end_utc, location);
+        document.body.removeChild(card);
+    };
+
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Sluiten';
+    closeButton.onclick = () => {
+        document.body.removeChild(card);
+    };
+
+    buttonContainer.appendChild(deleteButton);
+    buttonContainer.appendChild(closeButton);
+    card.appendChild(buttonContainer);
+    document.body.appendChild(card);
+}
     });
+
 
     calendar.render();
 
