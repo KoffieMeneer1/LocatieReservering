@@ -141,8 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = {
             contactperson: formData.get('contactperson'),
             title: formData.get('title'),
-            'start-date': startDate,
-            'end-date': endDate,
+            Start_DT: startDate,
+            End_DT: endDate,
             location: formData.get('location')
         };
 
