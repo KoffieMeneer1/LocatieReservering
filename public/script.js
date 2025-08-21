@@ -36,6 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
         events: '/api/reservations',
         
 eventDataTransform: function(eventData) {
+    console.log('Event ontvangen:', eventData);
+    // Map database fields to FullCalendar fields
     function toLocalDate(dateTimeStr) {
         if (!dateTimeStr || typeof dateTimeStr !== 'string' || !dateTimeStr.includes(' ')) return null;
         const [date, time] = dateTimeStr.split(' ');
@@ -45,11 +47,8 @@ eventDataTransform: function(eventData) {
         if (!year || !month || !day || !hour || !minute || !second) return null;
         return new Date(year, month - 1, day, hour, minute, second);
     }
-
     const start = toLocalDate(eventData.Start_DT);
     const end = toLocalDate(eventData.End_DT);
-    if (!start || !end) return null;
-
     return {
         title: eventData.Titel,
         start,
@@ -165,14 +164,13 @@ eventDataTransform: function(eventData) {
         const startDate = toMySQLDateTime(formData.get('start-date'));
         const endDate = toMySQLDateTime(formData.get('end-date'));
 
-        const data = {
-            Contactpersoon: formData.get('contactperson'),
-            Titel: formData.get('title'),
-            Start_DT: startDate,
-            End_DT: endDate,
-            Locatie: formData.get('location')
-        };
-
+const data = {
+    Contactpersoon: formData.get('contactperson'),
+    Titel: formData.get('title'),
+    Start_DT: startDate,
+    End_DT: endDate,
+    Locatie: formData.get('location')
+};
 
         try {
             const response = await fetch('/api/reservations', {
