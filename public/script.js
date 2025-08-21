@@ -45,18 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!year || !month || !day || !hour || !minute || !second) return null;
                 return new Date(year, month - 1, day, hour, minute, second);
             }
-            return {
-                title: eventData.Titel,
-                start: toLocalDate(eventData.Start_DT),
-                end: toLocalDate(eventData.End_DT),
-                resourceId: eventData.Locatie,
-                extendedProps: {
-                    start_utc: eventData.Start_DT,
-                    end_utc: eventData.End_DT,
-                    location: eventData.Locatie,
-                    contactperson: eventData.Contactpersoon
-                }
-            };
         },
         eventClick: function(info) {
             const { title, extendedProps, start, end } = info.event;
