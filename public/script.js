@@ -71,13 +71,11 @@ eventClick: function(info) {
     const { title, extendedProps } = info.event;
     const { location, start_utc, end_utc, contactperson } = extendedProps;
 
-    // Verwijder eventuele bestaande kaarten
     const existingCard = document.querySelector('.reservation-card');
     if (existingCard) {
         document.body.removeChild(existingCard);
     }
 
-    // Zet UTC om naar Nederlandse tijd
     const options = {
         timeZone: 'Europe/Amsterdam',
         weekday: 'long',
@@ -87,11 +85,11 @@ eventClick: function(info) {
         hour: '2-digit',
         minute: '2-digit'
     };
-// Wintertijd -1, Zomertijd -2, Laatste zondag maart = zomertijd gaat in, Laatste zondag oktober = wintertijd gaat in
+
     const cardContent = `
         <h3>${title}</h3>
-        <p><strong>Start:</strong> ${new Date(new Date(start_utc).getTime() - 2 * 60 * 60 * 1000).toLocaleString('nl-NL', options)}</p>
-        <p><strong>Eind:</strong> ${new Date(new Date(end_utc).getTime() - 2 * 60 * 60 * 1000).toLocaleString('nl-NL', options)}</p>
+        <p><strong>Start:</strong> ${new Date(start_utc).toLocaleString('nl-NL', options)}</p>
+        <p><strong>Eind:</strong> ${new Date(end_utc).toLocaleString('nl-NL', options)}</p>
         <p><strong>Locatie:</strong> ${location}</p>
     `;
 
@@ -105,7 +103,7 @@ eventClick: function(info) {
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'Verwijderen';
     deleteButton.onclick = () => {
-        deleteReservation(start_utc, end_utc, location, title, contactpersoon);
+        deleteReservation(start_utc, end_utc, location, title, contactperson);
         document.body.removeChild(card);
     };
 
