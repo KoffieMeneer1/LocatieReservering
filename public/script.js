@@ -165,7 +165,8 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
     const params = new URLSearchParams({
         Start_DT: startMySQL,
         End_DT: endMySQL,
-        Locatie: location
+        Locatie: location,
+        Titel: title
     });
 
     try {
