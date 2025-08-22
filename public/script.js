@@ -1,16 +1,25 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Helper functie: ISO string naar MySQL datetime formaat
-    function toMySQLDateTime(dateStr) {
-        const d = new Date(dateStr);
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const hour = String(d.getHours()).padStart(2, '0');
-        const minute = String(d.getMinutes()).padStart(2, '0');
-        const second = String(d.getSeconds()).padStart(2, '0');
-        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-    }
+
+function toMySQLDateTimeWithTZ(dateStr, timeZone = 'Europe/Amsterdam') {
+    const date = new Date(dateStr);
+    const options = {
+        timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    };
+
+    const parts = new Intl.DateTimeFormat('nl-NL', options).formatToParts(date);
+    const getPart = (type) => parts.find(p => p.type === type)?.value;
+
+    return `${getPart('year')}-${getPart('month')}-${getPart('day')} ${getPart('hour')}:${getPart('minute')}:${getPart('second')}`;
+}
+
 
     const reservationForm = document.getElementById('reservation-form');
     const calendarEl = document.getElementById('calendar');
@@ -71,11 +80,13 @@ eventClick: function(info) {
     const { title, extendedProps } = info.event;
     const { location, start_utc, end_utc, contactperson } = extendedProps;
 
+    // Verwijder eventuele bestaande kaarten
     const existingCard = document.querySelector('.reservation-card');
     if (existingCard) {
         document.body.removeChild(existingCard);
     }
 
+    // Zet UTC om naar Nederlandse tijd
     const options = {
         timeZone: 'Europe/Amsterdam',
         weekday: 'long',
@@ -85,11 +96,11 @@ eventClick: function(info) {
         hour: '2-digit',
         minute: '2-digit'
     };
-
+// Wintertijd -1, Zomertijd -2, Laatste zondag maart = zomertijd gaat in, Laatste zondag oktober = wintertijd gaat in
     const cardContent = `
         <h3>${title}</h3>
-        <p><strong>Start:</strong> ${new Date(start_utc).toLocaleString('nl-NL', options)}</p>
-        <p><strong>Eind:</strong> ${new Date(end_utc).toLocaleString('nl-NL', options)}</p>
+        <p><strong>Start:</strong> ${new Date(new Date(start_utc).getTime() - 2 * 60 * 60 * 1000).toLocaleString('nl-NL', options)}</p>
+        <p><strong>Eind:</strong> ${new Date(new Date(end_utc).getTime() - 2 * 60 * 60 * 1000).toLocaleString('nl-NL', options)}</p>
         <p><strong>Locatie:</strong> ${location}</p>
     `;
 
@@ -103,7 +114,7 @@ eventClick: function(info) {
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'Verwijderen';
     deleteButton.onclick = () => {
-        deleteReservation(start_utc, end_utc, location, title, contactperson);
+        deleteReservation(start_utc, end_utc, location, contactperson);
         document.body.removeChild(card);
     };
 
@@ -125,20 +136,20 @@ eventClick: function(info) {
 
 
     
-const deleteReservation = async (start, end, location, title, contactpersoon) => {
-    if (!contactpersoon || !title || !start || !end || !location) {
+const deleteReservation = async (start, end, location, contactpersoon) => {
+    if (!contactpersoon || !start || !end || !location) {
         alert('Verwijderen geannuleerd. Ontbrekende gegevens.');
         return;
     }
 
-    const startMySQL = toMySQLDateTime(start);
-    const endMySQL = toMySQLDateTime(end);
+    const startMySQL = toMySQLDateTimeWithTZ(start);
+    const endMySQL = toMySQLDateTimeWithTZ(end);
 
+    // Use PK column names for backend
     const params = new URLSearchParams({
-        start: startMySQL,
-        end: endMySQL,
-        locatie: location,
-        titel: title
+        Start_DT: startMySQL,
+        End_DT: endMySQL,
+        Locatie: location
     });
 
     try {
