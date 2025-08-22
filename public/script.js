@@ -74,13 +74,12 @@ eventClick: function(info) {
         hour: '2-digit',
         minute: '2-digit'
     };
-
+// Wintertijd -1, Zomertijd -2, Laatste zondag maart = zomertijd gaat in, Laatste zondag oktober = wintertijd gaat in
     const cardContent = `
         <h3>${title}</h3>
         <p><strong>Start:</strong> ${new Date(new Date(start_utc).getTime() - 2 * 60 * 60 * 1000).toLocaleString('nl-NL', options)}</p>
         <p><strong>Eind:</strong> ${new Date(new Date(end_utc).getTime() - 2 * 60 * 60 * 1000).toLocaleString('nl-NL', options)}</p>
         <p><strong>Locatie:</strong> ${location}</p>
-        <p><strong>Contactpersoon:</strong> ${contactperson || 'Onbekend'}</p>
     `;
 
     const card = document.createElement('div');
@@ -121,9 +120,12 @@ eventClick: function(info) {
             return;
         }
 
+        // Zet ISO om naar MySQL formaat
+        const startMySQL = toMySQLDateTime(start);
+        const endMySQL = toMySQLDateTime(end);
+
         try {
-            // Gebruik 'locatie' als parameternaam voor backend
-            const params = new URLSearchParams({ start, end, locatie: location });
+            const params = new URLSearchParams({ start: startMySQL, end: endMySQL, Locatie: location });
             const response = await fetch(`/api/reservations?${params.toString()}`, {
                 method: 'DELETE',
                 headers: {
