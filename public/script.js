@@ -105,7 +105,7 @@ eventClick: function(info) {
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'Verwijderen';
     deleteButton.onclick = () => {
-        deleteReservation(start_utc, end_utc, location, title, contactperson);
+        deleteReservation(start_utc, end_utc, location, title, contactpersoon);
         document.body.removeChild(card);
     };
 
@@ -126,14 +126,15 @@ eventClick: function(info) {
     calendar.render();
 
 
-    const deleteReservation = async (start, end, location, title, contactpersoon) => {
-        if (!contactpersoon || !title) {
-            alert('Verwijderen geannuleerd.');
-            return;
-        }
+    
+const deleteReservation = async (start, end, location, title, contactpersoon) => {
+    if (!contactpersoon || !title || !start || !end || !location) {
+        alert('Verwijderen geannuleerd. Ontbrekende gegevens.');
+        return;
+    }
 
-        const startMySQL = toMySQLDateTime(start);
-        const endMySQL = toMySQLDateTime(end);
+    const startMySQL = toMySQLDateTime(start);
+    const endMySQL = toMySQLDateTime(end);
 
     const params = new URLSearchParams({
         start: startMySQL,
@@ -164,6 +165,7 @@ eventClick: function(info) {
         alert('Kon de reservering niet verwijderen.');
     }
 };
+
 
     // Event listener voor het toevoegen van een reservering
     reservationForm.addEventListener('submit', async (e) => {

@@ -92,7 +92,7 @@ app.delete('/api/reservations', (req: Request, res: Response) => {
   const start = req.query.start as string;
   const end = req.query.end as string;
   const locatie = req.query.locatie as string;
-  const title = req.query.title as string;
+  const title = req.query.titel as string;
   const contactpersoon = req.headers['x-contact-person'];
 
   console.log('Verzoek ontvangen voor DELETE:', {
