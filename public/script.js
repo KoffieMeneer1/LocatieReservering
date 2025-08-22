@@ -1,4 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Helper functie: ISO string naar MySQL datetime formaat
+    function toMySQLDateTime(dateStr) {
+        const d = new Date(dateStr);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hour = String(d.getHours()).padStart(2, '0');
+        const minute = String(d.getMinutes()).padStart(2, '0');
+        const second = String(d.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    }
+
     const reservationForm = document.getElementById('reservation-form');
     const calendarEl = document.getElementById('calendar');
 
@@ -151,18 +164,7 @@ eventClick: function(info) {
         e.preventDefault();
         const formData = new FormData(reservationForm);
         
-        // Zet datum/tijd om naar MySQL formaat: "YYYY-MM-DD HH:mm:ss"
-        function toMySQLDateTime(dateStr) {
-            const d = new Date(dateStr);
-            // Haal lokale tijd (NL) uit de datepicker
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const hour = String(d.getHours()).padStart(2, '0');
-            const minute = String(d.getMinutes()).padStart(2, '0');
-            const second = String(d.getSeconds()).padStart(2, '0');
-            return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-        }
+    // ...existing code...
 
         const startDate = toMySQLDateTime(formData.get('start-date'));
         const endDate = toMySQLDateTime(formData.get('end-date'));
