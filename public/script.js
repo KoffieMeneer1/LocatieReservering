@@ -138,7 +138,7 @@ eventClick: function(info) {
         const endMySQL = toMySQLDateTime(end);
 
         try {
-            const params = new URLSearchParams({ start: startMySQL, end: endMySQL, Locatie: location });
+            const params = new URLSearchParams({ Start_DT: startMySQL, End_DT: endMySQL, Locatie: location });
             const response = await fetch(`/api/reservations?${params.toString()}`, {
                 method: 'DELETE',
                 headers: {
