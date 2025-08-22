@@ -105,7 +105,7 @@ eventClick: function(info) {
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'Verwijderen';
     deleteButton.onclick = () => {
-        deleteReservation(start_utc, end_utc, location);
+        deleteReservation(start_utc, end_utc, location, title);
         document.body.removeChild(card);
     };
 
@@ -141,7 +141,8 @@ eventClick: function(info) {
             const params = new URLSearchParams({
                 start: startMySQL,
                 end: endMySQL,
-                locatie: location
+                locatie: location,
+                titel: title
             });
 
 
@@ -152,7 +153,9 @@ eventClick: function(info) {
                 }
             });
 
-            console.log('DELETE URL:', `/api/reservations?${params.toString()}`);
+            
+            console.log('DELETE URL:', decodeURIComponent(`/api/reservations?${params.toString()}`));
+
 
             if (response.ok) {
                 alert('Reservering succesvol verwijderd.');
