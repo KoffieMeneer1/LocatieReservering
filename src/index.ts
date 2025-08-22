@@ -89,29 +89,27 @@ app.post('/api/reservations', (req: Request, res: Response) => {
 
 
 app.delete('/api/reservations', (req: Request, res: Response) => {
-  const start = req.query.start as string;
-  const end = req.query.end as string;
-  const locatie = req.query.locatie as string;
-  const title = req.query.titel as string;
+  const start = req.query.Start_DT as string;
+  const end = req.query.End_DT as string;
+  const locatie = req.query.Locatie as string;
   const contactpersoon = req.headers['x-contact-person'];
 
   console.log('Verzoek ontvangen voor DELETE:', {
     start,
     end,
     locatie,
-    title,
     contactpersoon
   });
 
-  if (!contactpersoon || !start || !end || !locatie || !title) {
+  if (!contactpersoon || !start || !end || !locatie) {
     return res.status(400).json({ error: 'Alle velden zijn verplicht.' });
   }
 
-  // Zoek reservering binnen tijdsinterval
+  // Zoek reservering op PK
   connection.query(
     `SELECT * FROM locatiereserveren
-     WHERE Locatie = ? AND Start_DT = ? AND End_DT = ? AND Titel = ?`,
-    [locatie, start, end, title],
+     WHERE Locatie = ? AND Start_DT = ? AND End_DT = ?`,
+    [locatie, start, end],
     (error: Error | null, rows: any) => {
       if (error) {
         console.error('MySQL DELETE zoek error:', error);
@@ -129,8 +127,8 @@ app.delete('/api/reservations', (req: Request, res: Response) => {
       // Verwijder reservering
       connection.query(
         `DELETE FROM locatiereserveren
-         WHERE Start_DT = ? AND End_DT = ? AND Locatie = ? AND Contactpersoon = ? AND Titel = ?`,
-        [match.Start_DT, match.End_DT, match.Locatie, match.Contactpersoon, match.Titel],
+         WHERE Start_DT = ? AND End_DT = ? AND Locatie = ? AND Contactpersoon = ?`,
+        [match.Start_DT, match.End_DT, match.Locatie, match.Contactpersoon],
         (error: Error | null) => {
           if (error) {
             console.error('MySQL DELETE error:', error);
