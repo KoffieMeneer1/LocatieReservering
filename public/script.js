@@ -148,9 +148,15 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
         return;
     }
 
+    // Corrigeer tijdzone: -2 uur
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const startCorrected = new Date(startDate.getTime() - 2 * 60 * 60 * 1000);
+    const endCorrected = new Date(endDate.getTime() - 2 * 60 * 60 * 1000);
+
     // Format naar MySQL datetime in juiste tijdzone
-    const startMySQL = toMySQLDateTimeWithTZ(start);
-    const endMySQL = toMySQLDateTimeWithTZ(end);
+    const startMySQL = toMySQLDateTimeWithTZ(startCorrected);
+    const endMySQL = toMySQLDateTimeWithTZ(endCorrected);
 
     // Debug: log waarden
     console.log('Verwijder poging:', { Start_DT: startMySQL, End_DT: endMySQL, Locatie: location, Contactpersoon: contactpersoon });
