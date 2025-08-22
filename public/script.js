@@ -120,7 +120,7 @@ eventClick: function(info) {
             alert('Verwijderen geannuleerd.');
             return;
         }
-        deleteReservation(start_utc, end_utc, location, contactpersoonInput);
+        deleteReservation(start_utc, end_utc, location, title, contactpersoonInput);
         document.body.removeChild(card);
     };
 
@@ -142,8 +142,8 @@ eventClick: function(info) {
 
 
     
-const deleteReservation = async (start, end, location, contactpersoon) => {
-    if (!contactpersoon || !start || !end || !location) {
+const deleteReservation = async (start, end, location, title, contactpersoon) => {
+    if (!contactpersoon || !start || !end || !title || !location ) {
         alert('Verwijderen geannuleerd. Ontbrekende gegevens.');
         return;
     }
