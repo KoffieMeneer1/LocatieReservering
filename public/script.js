@@ -105,7 +105,7 @@ eventClick: function(info) {
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'Verwijderen';
     deleteButton.onclick = () => {
-        deleteReservation(start_utc, end_utc, location, title);
+        deleteReservation(start_utc, end_utc, location, title, contactperson);
         document.body.removeChild(card);
     };
 
@@ -125,58 +125,51 @@ eventClick: function(info) {
 
     calendar.render();
 
-    // Functie om een reservering te verwijderen
-    const deleteReservation = async (start, end, location) => {
-        const contactpersoon = prompt('Voer de naam van de contactpersoon in om te bevestigen:');
-        if (!contactpersoon) {
+
+    const deleteReservation = async (start, end, location, title, contactpersoon) => {
+        if (!contactpersoon || !title) {
             alert('Verwijderen geannuleerd.');
             return;
         }
 
-        // Zet ISO om naar MySQL formaat
         const startMySQL = toMySQLDateTime(start);
         const endMySQL = toMySQLDateTime(end);
 
-        try {
-            const params = new URLSearchParams({
-                start: startMySQL,
-                end: endMySQL,
-                locatie: location,
-                titel: title
-            });
+    const params = new URLSearchParams({
+        start: startMySQL,
+        end: endMySQL,
+        locatie: location,
+        titel: title
+    });
 
-
-            const response = await fetch(`/api/reservations?${params.toString()}`, {
-                method: 'DELETE',
-                headers: {
-                    'x-contact-person': contactpersoon
-                }
-            });
-
-            
-            console.log('DELETE URL:', decodeURIComponent(`/api/reservations?${params.toString()}`));
-
-
-            if (response.ok) {
-                alert('Reservering succesvol verwijderd.');
-                calendar.refetchEvents(); // Herlaad de evenementen
-            } else {
-                const result = await response.json();
-                alert(`Fout: ${result.error}`);
+    try {
+        const response = await fetch(`/api/reservations?${params.toString()}`, {
+            method: 'DELETE',
+            headers: {
+                'x-contact-person': contactpersoon
             }
-        } catch (error) {
-            console.error('Fout bij verwijderen:', error);
-            alert('Kon de reservering niet verwijderen.');
+        });
+
+        console.log('DELETE URL:', decodeURIComponent(`/api/reservations?${params.toString()}`));
+
+        if (response.ok) {
+            alert('Reservering succesvol verwijderd.');
+            calendar.refetchEvents();
+        } else {
+            const result = await response.json();
+            alert(`Fout: ${result.error}`);
         }
-    };
+    } catch (error) {
+        console.error('Fout bij verwijderen:', error);
+        alert('Kon de reservering niet verwijderen.');
+    }
+};
 
     // Event listener voor het toevoegen van een reservering
     reservationForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(reservationForm);
         
-    // ...existing code...
-
         const startDate = toMySQLDateTime(formData.get('start-date'));
         const endDate = toMySQLDateTime(formData.get('end-date'));
 
