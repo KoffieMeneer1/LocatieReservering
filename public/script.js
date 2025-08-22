@@ -138,13 +138,15 @@ eventClick: function(info) {
         const endMySQL = toMySQLDateTime(end);
 
         try {
-            const params = new URLSearchParams({ start: startMySQL, end: endMySQL, locatie: location });
+            const params = new URLSearchParams({ start: startMySQL, end: endMySQL, Locatie: location });
             const response = await fetch(`/api/reservations?${params.toString()}`, {
                 method: 'DELETE',
                 headers: {
                     'x-contact-person': contactpersoon
                 }
             });
+
+            console.log('DELETE URL:', `/api/reservations?${params.toString()}`);
 
             if (response.ok) {
                 alert('Reservering succesvol verwijderd.');
