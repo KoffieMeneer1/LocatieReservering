@@ -144,11 +144,6 @@ eventClick: function(info) {
                 locatie: location
             });
 
-        
-        app.delete('/api/reservations', (req, res) => {
-            console.log('DELETE binnengekomen:', req.method, req.url, req.query, req.headers);
-        });
-
 
             const response = await fetch(`/api/reservations?${params.toString()}`, {
                 method: 'DELETE',

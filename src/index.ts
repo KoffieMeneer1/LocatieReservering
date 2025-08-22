@@ -89,6 +89,7 @@ app.post('/api/reservations', (req: Request, res: Response) => {
 
 // DELETE een reservering
 app.delete('/api/reservations', (req: Request, res: Response) => {
+  console.log('DELETE binnengekomen:', req.method, req.url, req.query, req.headers);
   const { start, end, locatie } = req.query;
   const contactpersoon = req.headers['x-contact-person'];
   if (!contactpersoon || !start || !end || !locatie) {
