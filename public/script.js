@@ -114,7 +114,13 @@ eventClick: function(info) {
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'Verwijderen';
     deleteButton.onclick = () => {
-        deleteReservation(start_utc, end_utc, location, contactperson);
+        // Prompt voor contactpersoon
+        const contactpersoonInput = prompt('Voer de naam van de contactpersoon in ter verificatie:');
+        if (!contactpersoonInput) {
+            alert('Verwijderen geannuleerd.');
+            return;
+        }
+        deleteReservation(start_utc, end_utc, location, contactpersoonInput);
         document.body.removeChild(card);
     };
 
@@ -142,8 +148,12 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
         return;
     }
 
+    // Format naar MySQL datetime in juiste tijdzone
     const startMySQL = toMySQLDateTimeWithTZ(start);
     const endMySQL = toMySQLDateTimeWithTZ(end);
+
+    // Debug: log waarden
+    console.log('Verwijder poging:', { Start_DT: startMySQL, End_DT: endMySQL, Locatie: location, Contactpersoon: contactpersoon });
 
     // Use PK column names for backend
     const params = new URLSearchParams({
