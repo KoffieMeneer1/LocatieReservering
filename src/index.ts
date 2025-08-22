@@ -87,37 +87,48 @@ app.post('/api/reservations', (req: Request, res: Response) => {
   );
 });
 
-// DELETE een reservering
+
 app.delete('/api/reservations', (req: Request, res: Response) => {
-  console.log('DELETE binnengekomen:', req.method, req.url, req.query, req.headers);
-  const { start, end, locatie } = req.query;
+  const start = req.query.start as string;
+  const end = req.query.end as string;
+  const locatie = req.query.locatie as string;
   const contactpersoon = req.headers['x-contact-person'];
+
+  console.log('Verzoek ontvangen voor DELETE:', {
+    start,
+    end,
+    locatie,
+    contactpersoon
+  });
+
   if (!contactpersoon || !start || !end || !locatie) {
     return res.status(400).json({ error: 'Alle velden zijn verplicht.' });
   }
 
-  // Verifieer contactpersoon
+  // Zoek reservering binnen tijdsinterval
   connection.query(
-    `SELECT Contactpersoon FROM locatiereserveren
-     WHERE Start_DT = ? AND End_DT = ? AND Locatie = ?`,
-  [start, end, locatie],
+    `SELECT * FROM locatiereserveren
+     WHERE Locatie = ? AND Start_DT <= ? AND End_DT >= ?`,
+    [locatie, start, end],
     (error: Error | null, rows: any) => {
       if (error) {
-        console.error('MySQL DELETE error:', error);
+        console.error('MySQL DELETE zoek error:', error);
         return res.status(500).json({ error: error.message });
       }
       if (rows.length === 0) {
         return res.status(404).json({ error: 'Reservering niet gevonden.' });
       }
-      if (rows[0].Contactpersoon !== contactpersoon) {
+
+      const match = rows.find((row: any) => row.Contactpersoon === contactpersoon);
+      if (!match) {
         return res.status(403).json({ error: 'Verificatie van contactpersoon mislukt.' });
       }
 
       // Verwijder reservering
       connection.query(
         `DELETE FROM locatiereserveren
-         WHERE Start_DT = ? AND End_DT = ? AND Locatie = ?`,
-  [start, end, locatie],
+         WHERE Start_DT = ? AND End_DT = ? AND Locatie = ? AND Contactpersoon = ?`,
+        [match.Start_DT, match.End_DT, match.Locatie, match.Contactpersoon],
         (error: Error | null) => {
           if (error) {
             console.error('MySQL DELETE error:', error);
