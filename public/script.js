@@ -1,4 +1,38 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Keycloak authentication setup
+    const keycloak = new Keycloak({
+        url: 'https://keycloak.locatiereserveren.quest',
+        realm: 'ReserveringRealm',
+        clientId: 'locatiereserveren-webapp'
+    });
+
+    keycloak.init({ onLoad: 'login-required' }).then(authenticated => {
+        if (!authenticated) {
+            window.location.reload();
+        } else {
+            console.log("Ingelogd als:", keycloak.tokenParsed.preferred_username);
+        }
+
+        // Start the app only after authentication
+        startApp();
+    }).catch(error => {
+        console.error("Keycloak init mislukt:", error);
+    });
+
+    // Token automatisch verversen elke 30 seconden
+    setInterval(() => {
+        keycloak.updateToken(60).then(refreshed => {
+            if (refreshed) {
+                console.log("Token vernieuwd");
+            }
+        }).catch(() => {
+            console.error("Token verversen mislukt");
+            keycloak.logout();
+        });
+    }, 30000);
+
+    // App logic after authentication
+    function startApp() {
 
 
 function toMySQLDateTimeWithTZ(dateStr, timeZone = 'Europe/Amsterdam', hourCorrection = 0) {
@@ -95,6 +129,7 @@ eventClick: function(info) {
         <p><strong>Start:</strong> ${toMySQLDateTimeWithTZ(start_utc, 'Europe/Amsterdam', -2)}</p>
         <p><strong>Eind:</strong> ${toMySQLDateTimeWithTZ(end_utc, 'Europe/Amsterdam', -2)}</p>
         <p><strong>Locatie:</strong> ${location}</p>
+        <p><strong>Contactpersoon:</strong> ${contactperson}</p>
     `;
 
     const card = document.createElement('div');
@@ -201,30 +236,32 @@ const data = {
     Locatie: formData.get('location')
 };
 
-        try {
-            const response = await fetch('/api/reservations', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
+            try {
+                const response = await fetch('/api/reservations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${keycloak.token}`
+                    },
+                    body: JSON.stringify(data)
+                });
 
-            if (response.ok) {
-                alert('Reservering succesvol aangemaakt!');
-                reservationForm.reset();
-                calendar.refetchEvents(); // Herlaad de evenementen
-            } else {
-                const result = await response.json();
-                if (result.error && result.error.includes('duplicate key value violates unique constraint')) {
-                    alert('Fout: Deze locatie & tijd is al gereserveerd, kies een andere tijd of locatie.');
+                if (response.ok) {
+                    alert('Reservering succesvol aangemaakt!');
+                    reservationForm.reset();
+                    calendar.refetchEvents(); // Herlaad de evenementen
                 } else {
-                    alert(`Fout: ${result.error}`);
+                    const result = await response.json();
+                    if (result.error && result.error.includes('duplicate key value violates unique constraint')) {
+                        alert('Fout: Deze locatie & tijd is al gereserveerd, kies een andere tijd of locatie.');
+                    } else {
+                        alert(`Fout: ${result.error}`);
+                    }
                 }
+            } catch (error) {
+                console.error('Fout bij aanmaken:', error);
+                alert('Kon de reservering niet aanmaken.');
             }
-        } catch (error) {
-            console.error('Fout bij aanmaken:', error);
-            alert('Kon de reservering niet aanmaken.');
-        }
     });
+        }
 });
