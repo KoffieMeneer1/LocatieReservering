@@ -1,40 +1,3 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Keycloak authentication setup
-    const keycloak = new Keycloak({
-        url: 'https://keycloak.locatiereserveren.quest',
-        realm: 'ReserveringRealm',
-        clientId: 'locatiereserveren-webapp'
-    });
-
-    keycloak.init({ onLoad: 'login-required' }).then(authenticated => {
-        if (!authenticated) {
-            window.location.reload();
-        } else {
-            console.log("Ingelogd als:", keycloak.tokenParsed.preferred_username);
-        }
-
-        // Start the app only after authentication
-        startApp();
-    }).catch(error => {
-        console.error("Keycloak init mislukt:", error);
-    });
-
-    // Token automatisch verversen elke 30 seconden
-    setInterval(() => {
-        keycloak.updateToken(60).then(refreshed => {
-            if (refreshed) {
-                console.log("Token vernieuwd");
-            }
-        }).catch(() => {
-            console.error("Token verversen mislukt");
-            keycloak.logout();
-        });
-    }, 30000);
-
-    // App logic after authentication
-    function startApp() {
-
-
 function toMySQLDateTimeWithTZ(dateStr, timeZone = 'Europe/Amsterdam', hourCorrection = 0) {
     let date = new Date(dateStr);
     if (hourCorrection !== 0) {
@@ -163,12 +126,9 @@ eventClick: function(info) {
     card.appendChild(buttonContainer);
     document.body.appendChild(card);
 }
-    });
-
+        });
 
     calendar.render();
-
-
 
 const deleteReservation = async (start, end, location, contactpersoon) => {
     if (!contactpersoon || !start || !end || !location ) {
@@ -263,5 +223,3 @@ const data = {
                 alert('Kon de reservering niet aanmaken.');
             }
     });
-        }
-});
