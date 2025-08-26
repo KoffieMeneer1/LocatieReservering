@@ -1,8 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
 
 
-function toMySQLDateTimeWithTZ(dateStr, timeZone = 'Europe/Amsterdam') {
-    const date = new Date(dateStr);
+function toMySQLDateTimeWithTZ(dateStr, timeZone = 'Europe/Amsterdam', hourCorrection = 0) {
+    let date = new Date(dateStr);
+    if (hourCorrection !== 0) {
+        date = new Date(date.getTime() + hourCorrection * 60 * 60 * 1000);
+    }
     const options = {
         timeZone,
         year: 'numeric',
@@ -86,21 +89,11 @@ eventClick: function(info) {
         document.body.removeChild(existingCard);
     }
 
-    // Zet UTC om naar Nederlandse tijd
-    const options = {
-        timeZone: 'Europe/Amsterdam',
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    };
 // Wintertijd -1, Zomertijd -2, Laatste zondag maart = zomertijd gaat in, Laatste zondag oktober = wintertijd gaat in
     const cardContent = `
         <h3>${title}</h3>
-        <p><strong>Start:</strong> ${new Date(new Date(start_utc).getTime() - 2 * 60 * 60 * 1000).toLocaleString('nl-NL', options)}</p>
-        <p><strong>Eind:</strong> ${new Date(new Date(end_utc).getTime() - 2 * 60 * 60 * 1000).toLocaleString('nl-NL', options)}</p>
+        <p><strong>Start:</strong> ${toMySQLDateTimeWithTZ(start_utc, 'Europe/Amsterdam', -2)}</p>
+        <p><strong>Eind:</strong> ${toMySQLDateTimeWithTZ(end_utc, 'Europe/Amsterdam', -2)}</p>
         <p><strong>Locatie:</strong> ${location}</p>
     `;
 
@@ -148,7 +141,7 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
         return;
     }
 
-    // Corrigeer tijdzone: -2 uur
+    // Wintertijd: -2, Zomertijd -1, Laatste zondag maart = zomertijd gaat in, Laatste zondag oktober = wintertijd gaat in
     const startDate = new Date(start);
     const endDate = new Date(end);
     const startCorrected = new Date(startDate.getTime() - 2 * 60 * 60 * 1000);
