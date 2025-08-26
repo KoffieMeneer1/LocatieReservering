@@ -1,4 +1,3 @@
-
 import Keycloak from 'keycloak-js';
 
 interface ParsedToken {
