@@ -12,7 +12,7 @@
 <body>
     <div class="container">
         <img src="images/Logo.ico" alt="Logo" class="page-logo">
-        <h1>Kamer Reservering</h1>
+        <h1>Locatie Reserveren</h1>
     <div id="welcome" class="welcome" style="margin-bottom:1rem;color:#2b5540;font-weight:600;">Welkom, bezoeker</div>
         <form id="reservation-form">
             <div class="form-group">
@@ -43,8 +43,9 @@
             </div>
             <button type="submit">Reserveer</button>
         </form>
-        <hr>
-        <div id="calendar"></div>
+    <hr>
+    <h2 id="availability" style="margin-top:0.5rem; color:#2b5540;">Beschikbaarheid</h2>
+    <div id="calendar"></div>
         <!-- Robust Keycloak loader: try multiple CDNs and only load init after adapter is present -->
         <script>
         (function(){
