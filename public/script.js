@@ -136,10 +136,12 @@ eventClick: function(info) {
 
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'Verwijderen';
-    deleteButton.onclick = () => {
+    deleteButton.onclick = async () => {
         // Use Keycloak token to authorize deletion on the server
-        deleteReservation(start_utc, end_utc, location);
-        document.body.removeChild(card);
+        const ok = await deleteReservation(start_utc, end_utc, location, contactperson);
+        if (ok) {
+            document.body.removeChild(card);
+        }
     };
 
     const closeButton = document.createElement('button');
@@ -160,7 +162,7 @@ eventClick: function(info) {
 const deleteReservation = async (start, end, location, contactpersoon) => {
     if (!contactpersoon || !start || !end || !location ) {
         alert('Verwijderen geannuleerd. Ontbrekende gegevens.');
-        return;
+        return false;
     }
 
     // Wintertijd: -2, Zomertijd -1, Laatste zondag maart = zomertijd gaat in, Laatste zondag oktober = wintertijd gaat in
@@ -199,13 +201,16 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
         if (response.ok) {
             alert('Reservering succesvol verwijderd.');
             calendar.refetchEvents();
+            return true;
         } else {
             const result = await response.json();
             alert(`Fout: ${result.error}`);
+            return false;
         }
     } catch (error) {
         console.error('Fout bij verwijderen:', error);
         alert('Kon de reservering niet verwijderen.');
+        return false;
     }
 };
 
