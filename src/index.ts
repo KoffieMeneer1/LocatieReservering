@@ -52,6 +52,31 @@ app.post('/api/reservations', (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Alle velden zijn verplicht.' });
   }
 
+  // Server-side validation: parse datetimes and enforce Start < End and business hours 09:00-18:00
+  try {
+    const start = new Date(Start_DT);
+    const end = new Date(End_DT);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({ error: 'Ongeldige datumformaten.' });
+    }
+    if (start.getTime() >= end.getTime()) {
+      return res.status(400).json({ error: 'Starttijd moet eerder zijn dan eindtijd.' });
+    }
+    const withinHours = (d: Date) => {
+      const h = d.getHours();
+      const m = d.getMinutes();
+      if (h < 9) return false;
+      if (h > 18) return false;
+      if (h === 18 && m > 0) return false; // max 18:00
+      return true;
+    };
+    if (!withinHours(start) || !withinHours(end)) {
+      return res.status(400).json({ error: 'Tijden moeten tussen 09:00 en 18:00 liggen (max 18:00).' });
+    }
+  } catch (e) {
+    return res.status(400).json({ error: 'Fout bij valideren van datums.' });
+  }
+
   // Controleer op overlappende reserveringen
   connection.query(
     `SELECT Titel FROM locatiereserveren
@@ -119,6 +144,31 @@ app.delete('/api/reservations', (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Alle velden zijn verplicht.' });
   }
 
+  // validate date formats and business hours
+  try {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return res.status(400).json({ error: 'Ongeldige datumformaten.' });
+    }
+    if (startDate.getTime() >= endDate.getTime()) {
+      return res.status(400).json({ error: 'Starttijd moet eerder zijn dan eindtijd.' });
+    }
+    const withinHours = (d: Date) => {
+      const h = d.getHours();
+      const m = d.getMinutes();
+      if (h < 9) return false;
+      if (h > 18) return false;
+      if (h === 18 && m > 0) return false;
+      return true;
+    };
+    if (!withinHours(startDate) || !withinHours(endDate)) {
+      return res.status(400).json({ error: 'Tijden moeten tussen 09:00 en 18:00 liggen (max 18:00).' });
+    }
+  } catch (e) {
+    return res.status(400).json({ error: 'Fout bij valideren van datums.' });
+  }
+
   // Zoek reservering op PK
   connection.query(
     `SELECT * FROM locatiereserveren
@@ -138,7 +188,7 @@ app.delete('/api/reservations', (req: Request, res: Response) => {
       // Match case-insensitively and ignore surrounding whitespace so the DB value and token claim can differ in case/spacing
       const match = rows.find((row: any) => ((row.Contactpersoon || '').toString().trim().toLowerCase()) === expectedContact.toLowerCase());
       if (!match) {
-        return res.status(403).json({ error: 'Verificatie van contactpersoon mislukt.' });
+        return res.status(403).json({ error: 'Verificatie mislukt. (Controleer of het goede bedrijfsaccount is gebruikt)' });
       }
 
       // Verwijder reservering
