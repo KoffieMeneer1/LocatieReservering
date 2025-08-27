@@ -44,8 +44,54 @@
         </form>
         <hr>
         <div id="calendar"></div>
-    <script src="https://unpkg.com/keycloak-js@26.2.0/dist/keycloak.min.js"></script>
-    <script src="keycloak-init.js" defer></script>
-    <script src="script.js" defer></script>
+        <!-- Robust Keycloak loader: try multiple CDNs and only load init after adapter is present -->
+        <script>
+        (function(){
+            const urls = [
+                'https://cdn.jsdelivr.net/npm/keycloak-js@26.2.0/dist/keycloak.min.js',
+                'https://cdn.jsdelivr.net/npm/keycloak-js@latest/dist/keycloak.min.js',
+                'https://unpkg.com/keycloak-js@latest/dist/keycloak.min.js'
+            ];
+
+            // Try to load the adapter from the list of URLs sequentially
+            function loadAdapter(i){
+                if(i>=urls.length){
+                    console.error('Failed to load Keycloak adapter from CDNs. Please place a local copy at /vendor/keycloak.min.js and add it as a fallback.');
+                    // Optionally try local vendor file if present
+                    const local = '/vendor/keycloak.min.js';
+                    const sLocal = document.createElement('script');
+                    sLocal.src = local;
+                    sLocal.onload = () => { console.log('Loaded local Keycloak adapter'); document.dispatchEvent(new Event('keycloak-adapter-loaded')); };
+                    sLocal.onerror = () => console.error('Local fallback not found:', local);
+                    document.head.appendChild(sLocal);
+                    return;
+                }
+
+                const s = document.createElement('script');
+                s.src = urls[i];
+                s.async = false; // preserve execution order semantics
+                s.onload = () => { console.log('Loaded Keycloak adapter from', urls[i]); document.dispatchEvent(new Event('keycloak-adapter-loaded')); };
+                s.onerror = () => { console.warn('Failed to load Keycloak adapter from', urls[i]); loadAdapter(i+1); };
+                document.head.appendChild(s);
+            }
+
+            loadAdapter(0);
+        })();
+        </script>
+
+        <script>
+        // Wait until adapter is ready, then load init and the rest of the app scripts
+        document.addEventListener('keycloak-adapter-loaded', () => {
+            const init = document.createElement('script');
+            init.src = 'keycloak-init.js';
+            init.defer = true;
+            document.body.appendChild(init);
+
+            const app = document.createElement('script');
+            app.src = 'script.js';
+            app.defer = true;
+            document.body.appendChild(app);
+        });
+        </script>
 </body>
 </html>
