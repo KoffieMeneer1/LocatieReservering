@@ -21,6 +21,21 @@ h1, h2 {
     margin-bottom: 20px;
 }
 
+/* Welcome banner shown above the form */
+.welcome {
+    margin-bottom: 1rem;
+    color: #2b5540;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Heading for the availability/calendar section */
+.availability {
+    margin-top: 0.5rem;
+    color: #2b5540;
+    text-align: center;
+}
+
 .form-group {
     margin-bottom: 15px;
 }
