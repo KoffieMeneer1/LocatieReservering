@@ -24,7 +24,7 @@ h1, h2 {
 /* Welcome banner shown above the form */
 .welcome {
     margin-bottom: 1rem;
-    color: #2b5540;
+    color: #1976D2;
     font-weight: 600;
     text-align: center;
 }
@@ -32,8 +32,48 @@ h1, h2 {
 /* Heading for the availability/calendar section */
 .availability {
     margin-top: 0.5rem;
-    color: #2b5540;
+    color: #1976D2;
     text-align: center;
+}
+
+/* Logout button (hidden by default - shown via JS when authenticated) */
+.logout-btn {
+    display: none; /* JS toggles to inline-block */
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+
+.logout-btn:hover{
+    background: #c12b3a;
+}
+
+/* Logged-out landing page tweaks */
+.loggedout-hero {
+    padding: 40px 20px;
+    text-align: center;
+}
+.loggedout-hero h1{
+    margin-bottom: 10px;
+    color: #1976D2;
+}
+.loggedout-hero p{ color: #333; }
+.loggedout-hero a{
+    display:inline-block;
+    margin-top:16px;
+    padding:10px 18px;
+    background:#1976D2;
+    color:#fff;
+    border-radius:6px;
+    text-decoration:none;
 }
 
 .form-group {
@@ -57,7 +97,7 @@ button {
     display: block;
     width: 100%;
     padding: 10px;
-    background: #096c00;
+    background: #1976D2;
     color: #fff;
     border: none;
     border-radius: 4px;
@@ -66,7 +106,7 @@ button {
 }
 
 button:hover {
-    background: #0077ff;
+    background: #145da0;
 }
 
 hr {
@@ -107,7 +147,7 @@ hr {
 .fc-next-button, 
 .fc-resourceTimelineDay-button, 
 .fc-resourceTimelineWeek-button {
-    background-color: #096c00 !important;
+    background-color: #1976D2 !important;
     border-color: #000000 !important;
     color: white !important;
 }
@@ -119,7 +159,7 @@ hr {
 .fc-resourceTimelineWeek-button:hover,
 .fc-resourceTimelineDay-button.fc-button-active,
 .fc-resourceTimelineWeek-button.fc-button-active {
-    background-color: #0077ff !important;
+    background-color: #145da0 !important;
     border-color: #000000 !important;
 }
 
@@ -134,7 +174,7 @@ hr {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     z-index: 1001;
     width: 350px;
-    border-left: 5px solid #096c00;
+    border-left: 5px solid #1976D2;
 }
 
 .reservation-card h3 {

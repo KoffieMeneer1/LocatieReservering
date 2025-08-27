@@ -25,6 +25,7 @@ function toMySQLDateTimeWithTZ(dateStr, timeZone = 'Europe/Amsterdam', hourCorre
     const calendarEl = document.getElementById('calendar');
     const welcomeEl = document.getElementById('welcome');
     const contactInput = document.getElementById('contactperson');
+    const logoutBtn = document.getElementById('logout-btn');
 
     function fillNameFromKeycloak(){
         try{
@@ -32,6 +33,7 @@ function toMySQLDateTimeWithTZ(dateStr, timeZone = 'Europe/Amsterdam', hourCorre
                 const given = window.keycloak.tokenParsed.given_name || window.keycloak.tokenParsed.preferred_username || '';
                 if(welcomeEl) welcomeEl.textContent = 'Welkom, ' + given;
                 if(contactInput) { contactInput.value = given; }
+                if(logoutBtn) logoutBtn.style.display = 'inline-block';
             }
         }catch(e){console.warn('Could not fill name from Keycloak', e)}
     }
@@ -39,6 +41,20 @@ function toMySQLDateTimeWithTZ(dateStr, timeZone = 'Europe/Amsterdam', hourCorre
     // Try immediately and also on authenticated event
     fillNameFromKeycloak();
     window.addEventListener('authenticated', fillNameFromKeycloak);
+
+    // Logout button behavior
+    if(logoutBtn){
+        logoutBtn.addEventListener('click', (e)=>{
+            e.preventDefault();
+            if(window.keycloak){
+                // redirect to loggedout page after logout
+                window.keycloak.logout({ redirectUri: window.location.origin + '/loggedout.html' });
+            } else {
+                // fallback: just redirect
+                window.location.href = '/loggedout.html';
+            }
+        });
+    }
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         timeZone: 'Europe/Amsterdam',
