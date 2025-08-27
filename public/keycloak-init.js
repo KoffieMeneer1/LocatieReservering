@@ -7,8 +7,8 @@
     return;
   }
 
-  // Use path-based URL so we can test Keycloak proxied under /auth
-  const keycloakBase = window.location.origin + '/auth';
+  // Use the Keycloak subdomain (works in your environment)
+  const keycloakBase = 'https://keycloak.locatiereserveren.quest';
   const kc = new Keycloak({
     url: keycloakBase,
     realm: 'ReserveringRealm',
