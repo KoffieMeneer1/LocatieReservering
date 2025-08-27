@@ -99,7 +99,8 @@ app.delete('/api/reservations', (req: Request, res: Response) => {
     try {
       const token = auth.substring('Bearer '.length);
       const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf8'));
-      contactpersoonFromToken = (payload.preferred_username || payload.given_name || payload.email) as string | undefined;
+  // Prefer the human/display name (given_name or name) before the short preferred_username
+  contactpersoonFromToken = (payload.given_name || payload.name || payload.preferred_username || payload.email) as string | undefined;
     } catch (e) {
       console.warn('Failed to parse JWT for authorization');
     }
@@ -132,9 +133,10 @@ app.delete('/api/reservations', (req: Request, res: Response) => {
         return res.status(404).json({ error: 'Reservering niet gevonden.' });
       }
 
-      // Decide which identifier to use: prefer token-derived username, fallback to header
-      const expectedContact = contactpersoonFromToken || (req.headers['x-contact-person'] as string);
-      const match = rows.find((row: any) => row.Contactpersoon === expectedContact);
+      // Decide which identifier to use: prefer token-derived human name, fallback to header
+      const expectedContact = (contactpersoonFromToken || (req.headers['x-contact-person'] as string) || '').toString().trim();
+      // Match case-insensitively and ignore surrounding whitespace so the DB value and token claim can differ in case/spacing
+      const match = rows.find((row: any) => ((row.Contactpersoon || '').toString().trim().toLowerCase()) === expectedContact.toLowerCase());
       if (!match) {
         return res.status(403).json({ error: 'Verificatie van contactpersoon mislukt.' });
       }
