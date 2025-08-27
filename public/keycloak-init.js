@@ -20,7 +20,10 @@
 
   (async () => {
     try {
-      const authenticated = await kc.init({ onLoad: 'login-required' });
+      console.debug('Keycloak config:', { url: keycloakBase, realm: 'ReserveringRealm', clientId: 'locatiereserveren-webapp', redirectUri: window.location.origin + '/' });
+      // Prefer PKCE for public/browser clients (helps with code->token exchange)
+      // Also explicitly set redirectUri to ensure the code->token exchange uses the exact URI registered in the client settings
+      const authenticated = await kc.init({ onLoad: 'login-required', pkceMethod: 'S256', redirectUri: window.location.origin + '/' });
       if (!authenticated) {
         console.log('Keycloak: not authenticated, reloading to trigger login');
         window.location.reload();
@@ -30,9 +33,18 @@
       console.log('Keycloak initialized, user:', kc.tokenParsed ? kc.tokenParsed.preferred_username : 'unknown');
       window.dispatchEvent(new Event('authenticated'));
     } catch (err) {
-      console.error('Keycloak init failed:', err);
+      try {
+        console.error('Keycloak init failed:', err, JSON.stringify(err));
+      } catch (e) {
+        console.error('Keycloak init failed (could not stringify):', err);
+      }
     }
   })();
+
+  // Extra listeners to surface auth/token errors in the console for easier debugging
+  kc.onAuthError = function(errorData) { console.error('Keycloak onAuthError:', errorData); };
+  kc.onAuthRefreshError = function() { console.error('Keycloak onAuthRefreshError — token refresh failed'); };
+  kc.onAuthSuccess = function() { console.log('Keycloak onAuthSuccess'); };
 
   // Keep token fresh for SPA usage
   setInterval(async () => {
