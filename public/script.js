@@ -137,13 +137,8 @@ eventClick: function(info) {
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'Verwijderen';
     deleteButton.onclick = () => {
-        // Prompt voor contactpersoon
-        const contactpersoonInput = prompt('Voer de naam van de contactpersoon in ter verificatie:');
-        if (!contactpersoonInput) {
-            alert('Verwijderen geannuleerd.');
-            return;
-        }
-    deleteReservation(start_utc, end_utc, location, contactpersoonInput);
+        // Use Keycloak token to authorize deletion on the server
+        deleteReservation(start_utc, end_utc, location);
         document.body.removeChild(card);
     };
 
@@ -189,11 +184,14 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
     });
 
     try {
+        const headers = {};
+        if (window.keycloak && window.keycloak.token) {
+            headers['Authorization'] = `Bearer ${window.keycloak.token}`;
+        }
+
         const response = await fetch(`/api/reservations?${params.toString()}`, {
             method: 'DELETE',
-            headers: {
-                'x-contact-person': contactpersoon
-            }
+            headers
         });
 
         console.log('DELETE URL:', decodeURIComponent(`/api/reservations?${params.toString()}`));

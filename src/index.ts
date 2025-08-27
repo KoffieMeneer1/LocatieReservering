@@ -92,16 +92,29 @@ app.delete('/api/reservations', (req: Request, res: Response) => {
   const start = req.query.Start_DT as string;
   const end = req.query.End_DT as string;
   const locatie = req.query.Locatie as string;
-  const contactpersoon = req.headers['x-contact-person'];
+  // Extract user identity from Bearer token if present
+  const auth = req.headers['authorization'] as string | undefined;
+  let contactpersoonFromToken: string | undefined;
+  if (auth && auth.startsWith('Bearer ')) {
+    try {
+      const token = auth.substring('Bearer '.length);
+      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf8'));
+      contactpersoonFromToken = (payload.preferred_username || payload.given_name || payload.email) as string | undefined;
+    } catch (e) {
+      console.warn('Failed to parse JWT for authorization');
+    }
+  }
 
+  const headerContactPerson = req.headers['x-contact-person'] as string | undefined;
   console.log('Verzoek ontvangen voor DELETE:', {
     start,
     end,
     locatie,
-    contactpersoon
+    contactpersoonFromToken,
+    headerContactPerson
   });
 
-  if (!contactpersoon || !start || !end || !locatie) {
+  if ((!contactpersoonFromToken && !req.headers['x-contact-person']) || !start || !end || !locatie) {
     return res.status(400).json({ error: 'Alle velden zijn verplicht.' });
   }
 
@@ -119,7 +132,9 @@ app.delete('/api/reservations', (req: Request, res: Response) => {
         return res.status(404).json({ error: 'Reservering niet gevonden.' });
       }
 
-      const match = rows.find((row: any) => row.Contactpersoon === contactpersoon);
+      // Decide which identifier to use: prefer token-derived username, fallback to header
+      const expectedContact = contactpersoonFromToken || (req.headers['x-contact-person'] as string);
+      const match = rows.find((row: any) => row.Contactpersoon === expectedContact);
       if (!match) {
         return res.status(403).json({ error: 'Verificatie van contactpersoon mislukt.' });
       }
