@@ -23,6 +23,22 @@ function toMySQLDateTimeWithTZ(dateStr, timeZone = 'Europe/Amsterdam', hourCorre
 
     const reservationForm = document.getElementById('reservation-form');
     const calendarEl = document.getElementById('calendar');
+    const welcomeEl = document.getElementById('welcome');
+    const contactInput = document.getElementById('contactperson');
+
+    function fillNameFromKeycloak(){
+        try{
+            if(window.keycloak && window.keycloak.tokenParsed){
+                const given = window.keycloak.tokenParsed.given_name || window.keycloak.tokenParsed.preferred_username || '';
+                if(welcomeEl) welcomeEl.textContent = 'Welkom, ' + given;
+                if(contactInput) { contactInput.value = given; }
+            }
+        }catch(e){console.warn('Could not fill name from Keycloak', e)}
+    }
+
+    // Try immediately and also on authenticated event
+    fillNameFromKeycloak();
+    window.addEventListener('authenticated', fillNameFromKeycloak);
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         timeZone: 'Europe/Amsterdam',
