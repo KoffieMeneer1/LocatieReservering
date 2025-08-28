@@ -15,7 +15,7 @@ body {
     padding-top: 140px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    position: static;
+    position: relative;
 }
 
 h1, h2 {
@@ -120,14 +120,23 @@ hr {
 }
 
 .page-logo {
-    /* Fixed, centered at the very top */
     position: fixed;
     top: 10px;
     left: 50%;
     transform: translateX(-50%);
     width: 100px;
     height: auto;
-    z-index: 1003;
+    z-index: 2147483000;
+    pointer-events: auto;
+}
+
+.logo-fixed {
+    position: fixed !important;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2147483000;
+    pointer-events: auto;
 }
 
 #calendar {
@@ -227,7 +236,6 @@ hr {
     }
 
     .page-logo {
-    /* Keep logo fixed on mobile as well (does not scroll) */
     position: fixed;
     top: 8px;
     left: 50%;

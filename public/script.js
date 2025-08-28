@@ -112,7 +112,7 @@ eventDataTransform: function(eventData) {
 },
 
 
-eventClick: function(info) {
+eventClick: async function(info) {
     const { title, extendedProps } = info.event;
     const { location, start_utc, end_utc, contactperson } = extendedProps;
 
@@ -122,31 +122,89 @@ eventClick: function(info) {
         document.body.removeChild(existingCard);
     }
 
-// Wintertijd -1, Zomertijd -2, Laatste zondag maart = zomertijd gaat in, Laatste zondag oktober = wintertijd gaat in
-    const cardContent = `
-        <h3>${title}</h3>
-        <p><strong>Start:</strong> ${toMySQLDateTimeWithTZ(start_utc, 'Europe/Amsterdam', -2)}</p>
-        <p><strong>Eind:</strong> ${toMySQLDateTimeWithTZ(end_utc, 'Europe/Amsterdam', -2)}</p>
-        <p><strong>Locatie:</strong> ${location}</p>
-        <p><strong>Contactpersoon:</strong> ${contactperson}</p>
-    `;
-
     const card = document.createElement('div');
     card.className = 'reservation-card';
-    card.innerHTML = cardContent;
+
+    // Build card contents safely to avoid XSS: use textContent instead of innerHTML
+    const h3 = document.createElement('h3');
+    h3.textContent = title;
+    card.appendChild(h3);
+
+    // Wintertijd -1, Zomertijd -2, Laatste zondag maart = zomertijd gaat in, Laatste zondag oktober = wintertijd gaat in
+    const pStart = document.createElement('p');
+    const strongStart = document.createElement('strong');
+    strongStart.textContent = 'Start:';
+    pStart.appendChild(strongStart);
+    pStart.appendChild(document.createTextNode(' ' + toMySQLDateTimeWithTZ(start_utc, 'Europe/Amsterdam', -2)));
+    card.appendChild(pStart);
+
+    const pEnd = document.createElement('p');
+    const strongEnd = document.createElement('strong');
+    strongEnd.textContent = 'Eind:';
+    pEnd.appendChild(strongEnd);
+    pEnd.appendChild(document.createTextNode(' ' + toMySQLDateTimeWithTZ(end_utc, 'Europe/Amsterdam', -2)));
+    card.appendChild(pEnd);
+
+    const pLocation = document.createElement('p');
+    const strongLoc = document.createElement('strong');
+    strongLoc.textContent = 'Locatie:';
+    pLocation.appendChild(strongLoc);
+    pLocation.appendChild(document.createTextNode(' ' + location));
+    card.appendChild(pLocation);
+
+    const pContact = document.createElement('p');
+    const strongContact = document.createElement('strong');
+    strongContact.textContent = 'Contactpersoon:';
+    pContact.appendChild(strongContact);
+    pContact.appendChild(document.createTextNode(' ' + contactperson));
+    card.appendChild(pContact);
 
     const buttonContainer = document.createElement('div');
     buttonContainer.className = 'card-buttons';
 
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'Verwijderen';
-    deleteButton.onclick = async () => {
-        // Use Keycloak token to authorize deletion on the server
-        const ok = await deleteReservation(start_utc, end_utc, location, contactperson);
-        if (ok) {
-            document.body.removeChild(card);
+    // Default disabled until we verify auth + connectivity
+    deleteButton.disabled = true;
+    deleteButton.setAttribute('aria-disabled', 'true');
+    deleteButton.title = 'Controleren of verwijderen mogelijk is...';
+
+    // Update function to enable/disable the delete button consistently
+    let updateDeleteButtonState = async function() {
+        let token = null;
+        try {
+            if (window.keycloak && typeof window.keycloak.getToken === 'function') {
+                token = await window.keycloak.getToken();
+            }
+        } catch (e) { token = null; }
+
+        if (!token || !navigator.onLine) {
+            deleteButton.disabled = true;
+            deleteButton.setAttribute('aria-disabled', 'true');
+            deleteButton.title = !navigator.onLine ? 'Offline — verwijderen niet mogelijk' : 'Niet ingelogd — ververs om in te loggen';
+            deleteButton.onclick = null;
+        } else {
+            deleteButton.disabled = false;
+            deleteButton.removeAttribute('aria-disabled');
+            deleteButton.title = 'Verwijder deze reservering';
+            deleteButton.onclick = async () => {
+                // Use Keycloak token to authorize deletion on the server
+                const ok = await deleteReservation(start_utc, end_utc, location, contactperson);
+                if (ok) {
+                    // cleanup listeners and remove card
+                    window.removeEventListener('online', updateDeleteButtonState);
+                    window.removeEventListener('offline', updateDeleteButtonState);
+                    document.body.removeChild(card);
+                }
+            };
         }
     };
+
+    // Initial state check
+    updateDeleteButtonState();
+    // Keep state updated on connectivity changes
+    window.addEventListener('online', updateDeleteButtonState);
+    window.addEventListener('offline', updateDeleteButtonState);
 
     const closeButton = document.createElement('button');
     closeButton.textContent = 'Sluiten';
