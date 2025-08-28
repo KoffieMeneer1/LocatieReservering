@@ -96,7 +96,7 @@ function toMySQLDateTimeWithTZ(dateStr, timeZone = 'Europe/Amsterdam', hourCorre
         
 // ISO STRING
 eventDataTransform: function(eventData) {
-    console.log('Event ontvangen:', eventData);
+    // Keep transformation but avoid logging full event objects to the console
     return {
         title: eventData.Titel,
         start: eventData.Start_DT,
@@ -185,8 +185,6 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
     const startMySQL = toMySQLDateTimeWithTZ(startCorrected);
     const endMySQL = toMySQLDateTimeWithTZ(endCorrected);
 
-    // minimal logging (avoid exposing full tokens or sensitive data in console)
-
     // Use PK column names for backend
     const params = new URLSearchParams({
         Start_DT: startMySQL,
@@ -197,6 +195,7 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
     try {
         const headers = {};
         if (window.keycloak && window.keycloak.token) {
+            // send token in Authorization header but avoid printing it anywhere
             headers['Authorization'] = `Bearer ${window.keycloak.token}`;
         }
         // include contact person to help server-side verification if token parsing fails
@@ -217,7 +216,7 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
             return false;
         }
     } catch (error) {
-        console.error('Fout bij verwijderen:', error);
+        // suppress detailed error in console to avoid leaking internals
         alert('Kon de reservering niet verwijderen.');
         return false;
     }
@@ -287,12 +286,11 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
 
             if (response.ok) {
                 alert('Reservering succesvol aangemaakt!');
-                // keep contactpersoon for the session so user can create multiple reservations
                 try { sessionStorage.setItem('contactperson', contact); } catch (e) {}
                 const contactVal = contactInput ? contactInput.value : '';
                 reservationForm.reset();
                 if (contactInput) contactInput.value = contactVal;
-                calendar.refetchEvents(); // Herlaad de evenementen
+                calendar.refetchEvents();
             } else {
                 const result = await response.json();
                 if (result.error && result.error.includes('duplicate key value violates unique constraint')) {
@@ -302,7 +300,6 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
                 }
             }
         } catch (error) {
-            console.error('Fout bij aanmaken:', error);
             alert('Kon de reservering niet aanmaken.');
         }
     });

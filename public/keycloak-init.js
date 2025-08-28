@@ -20,39 +20,33 @@
 
   (async () => {
     try {
-      console.debug('Keycloak config:', { url: keycloakBase, realm: 'ReserveringRealm', clientId: 'locatiereserveren-webapp', redirectUri: window.location.origin + '/' });
-      // Prefer PKCE for public/browser clients (helps with code->token exchange)
-      // Also explicitly set redirectUri to ensure the code->token exchange uses the exact URI registered in the client settings
+      // Initialize Keycloak without printing tokens/claims to console
       const authenticated = await kc.init({ onLoad: 'login-required', pkceMethod: 'S256', redirectUri: window.location.origin + '/' });
       if (!authenticated) {
-        console.log('Keycloak: not authenticated, reloading to trigger login');
+        // Trigger login reload; avoid logging token details
         window.location.reload();
         return;
       }
 
-      console.log('Keycloak initialized, user:', kc.tokenParsed ? kc.tokenParsed.preferred_username : 'unknown');
+      // Notify app that authentication completed
       window.dispatchEvent(new Event('authenticated'));
     } catch (err) {
-      try {
-        console.error('Keycloak init failed:', err, JSON.stringify(err));
-      } catch (e) {
-        console.error('Keycloak init failed (could not stringify):', err);
-      }
+      // Keep errors minimal to avoid leaking details in the browser console
+      try { console.error('Keycloak initialization failed'); } catch (e) { /* ignore */ }
     }
   })();
 
   // Extra listeners to surface auth/token errors in the console for easier debugging
-  kc.onAuthError = function(errorData) { console.error('Keycloak onAuthError:', errorData); };
-  kc.onAuthRefreshError = function() { console.error('Keycloak onAuthRefreshError — token refresh failed'); };
-  kc.onAuthSuccess = function() { console.log('Keycloak onAuthSuccess'); };
+  kc.onAuthError = function() { /* auth error - suppressed in browser console */ };
+  kc.onAuthRefreshError = function() { /* refresh error - suppressed */ };
+  kc.onAuthSuccess = function() { /* success - suppressed */ };
 
   // Keep token fresh for SPA usage
   setInterval(async () => {
     try {
-      const refreshed = await kc.updateToken(60);
-      if (refreshed) console.log('Keycloak token refreshed');
+      // attempt silent refresh; do not log token contents
+      await kc.updateToken(60).catch(() => { /* ignore refresh failures here */ });
     } catch (e) {
-      console.error('Failed to refresh token', e);
       try { kc.logout(); } catch (_) {}
     }
   }, 30000);

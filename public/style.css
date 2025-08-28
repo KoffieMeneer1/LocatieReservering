@@ -12,6 +12,8 @@ body {
     margin: auto;
     background: #fff;
     padding: 20px;
+    /* add top padding so fixed logo does not overlap content */
+    padding-top: 140px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     position: relative;
@@ -119,11 +121,14 @@ hr {
 }
 
 .page-logo {
-    position: absolute;
-    top: 25px;
-    left: 10px;
-    width: 100px; 
+    /* Fixed, centered at the very top */
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
     height: auto;
+    z-index: 1003;
 }
 
 #calendar {
@@ -219,13 +224,17 @@ hr {
     .container {
         width: 95%;
         padding: 10px;
+        /* revert top padding on small screens so logo sits inline as before */
+        padding-top: 20px;
     }
 
     .page-logo {
+        /* Keep mobile behavior unchanged: logo in document flow */
         position: static;
         display: block;
         margin: 0 auto 15px;
         width: 80px;
+        transform: none;
     }
 
     h1 {

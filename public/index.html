@@ -72,8 +72,8 @@
                 const s = document.createElement('script');
                 s.src = urls[i];
                 s.async = false; // preserve execution order semantics
-                s.onload = () => { console.log('Loaded Keycloak adapter from', urls[i]); document.dispatchEvent(new Event('keycloak-adapter-loaded')); };
-                s.onerror = () => { console.warn('Failed to load Keycloak adapter from', urls[i]); loadAdapter(i+1); };
+                s.onload = () => { document.dispatchEvent(new Event('keycloak-adapter-loaded')); };
+                s.onerror = () => { loadAdapter(i+1); };
                 document.head.appendChild(s);
             }
 
