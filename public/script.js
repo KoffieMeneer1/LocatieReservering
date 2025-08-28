@@ -194,9 +194,9 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
 
     try {
         const headers = {};
-        if (window.keycloak && window.keycloak.token) {
-            // send token in Authorization header but avoid printing it anywhere
-            headers['Authorization'] = `Bearer ${window.keycloak.token}`;
+        if (window.keycloak && typeof window.keycloak.getToken === 'function') {
+            const token = await window.keycloak.getToken();
+            if (token) headers['Authorization'] = `Bearer ${token}`;
         }
         // include contact person to help server-side verification if token parsing fails
         if (contactpersoon) headers['x-contact-person'] = contactpersoon;
@@ -275,12 +275,16 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
         };
 
         try {
+            // Build headers and fetch token via the wrapper to avoid exposing it globally
+            const headers = { 'Content-Type': 'application/json' };
+            if (window.keycloak && typeof window.keycloak.getToken === 'function') {
+                const token = await window.keycloak.getToken();
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch('/api/reservations', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': window.keycloak && window.keycloak.token ? `Bearer ${window.keycloak.token}` : undefined
-                },
+                headers,
                 body: JSON.stringify(data)
             });
 

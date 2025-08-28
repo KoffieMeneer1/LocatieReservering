@@ -15,15 +15,33 @@
     clientId: 'locatiereserveren-webapp'
   });
 
-  // Expose globally so existing scripts (script.js) can use `keycloak.token` etc.
-  window.keycloak = kc;
+  // Expose a minimal wrapper as `window.keycloak` so existing code can still call
+  // window.keycloak.logout() and read tokenParsed, but the raw token value is
+  // not stored as a plain property on window.
+  const wrapper = {
+    logout: (opts) => kc.logout(opts),
+    // async method to obtain a fresh token when needed by the app
+    getToken: async () => {
+      try { await kc.updateToken(30).catch(() => {}); } catch (e) { /* ignore */ }
+      return kc.token;
+    },
+    // expose parsed claims but do not expose the raw token as a property
+    get tokenParsed() { return kc.tokenParsed; }
+  };
+
+  Object.defineProperty(window, 'keycloak', {
+    value: wrapper,
+    configurable: false,
+    enumerable: false,
+    writable: false
+  });
 
   (async () => {
     try {
-      // Initialize Keycloak without printing tokens/claims to console
+      // Initialize Keycloak
       const authenticated = await kc.init({ onLoad: 'login-required', pkceMethod: 'S256', redirectUri: window.location.origin + '/' });
       if (!authenticated) {
-        // Trigger login reload; avoid logging token details
+        // avoid logging token details
         window.location.reload();
         return;
       }
