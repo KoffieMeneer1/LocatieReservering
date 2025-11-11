@@ -2,12 +2,17 @@
 // Browser-compatible Keycloak initialization using the CDN bundle (keycloak.min.js)
 // Matches the Keycloak client configuration (root/home/redirect URIs) you showed.
 (() => {
+  // Toggle to true while debugging; set to false for production to reduce console noise
+  const DEBUG = true;
+
   if (typeof Keycloak === 'undefined') {
     console.error('Keycloak adapter not found. Make sure https://unpkg.com/keycloak-js is loaded before this script.');
     return;
   }
 
   // Use the Keycloak subdomain (works in your environment)
+  // NOTE: some Keycloak setups require the base URL to include /auth (older distributions)
+  // e.g. 'https://keycloak.locatiereserveren.quest/auth'. If init fails, check the server well-known URL.
   const keycloakBase = 'https://keycloak.locatiereserveren.quest';
   const kc = new Keycloak({
     url: keycloakBase,
@@ -39,6 +44,7 @@
   (async () => {
     try {
       // Initialize Keycloak
+      if (DEBUG) console.debug('Initializing Keycloak with', { url: keycloakBase, realm: kc.realm, clientId: kc.clientId });
       const authenticated = await kc.init({ onLoad: 'login-required', pkceMethod: 'S256', redirectUri: window.location.origin + '/' });
       if (!authenticated) {
         // avoid logging token details
@@ -54,10 +60,12 @@
     }
   })();
 
-  // Extra listeners to surface auth/token errors in the console for easier debugging
-  kc.onAuthError = function() { /* auth error - suppressed in browser console */ };
-  kc.onAuthRefreshError = function() { /* refresh error - suppressed */ };
-  kc.onAuthSuccess = function() { /* success - suppressed */ };
+  // Temporary: more verbose handlers while debugging (do not log tokens)
+  kc.onAuthError = function(errorData) { if (DEBUG) console.error('Keycloak onAuthError', errorData); };
+  kc.onAuthRefreshError = function() { if (DEBUG) console.error('Keycloak onAuthRefreshError'); };
+  kc.onAuthSuccess = function() { if (DEBUG) console.debug('Keycloak onAuthSuccess'); };
+  kc.onAuthLogout = function() { if (DEBUG) console.debug('Keycloak onAuthLogout'); };
+  kc.onTokenExpired = function() { if (DEBUG) console.debug('Keycloak onTokenExpired'); };
 
   // Keep token fresh for SPA usage
   setInterval(async () => {
