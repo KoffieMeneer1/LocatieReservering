@@ -119,13 +119,14 @@ hr {
 }
 
 .page-logo {
-    position: fixed;
+    position: fixed !important;
     top: 10px;
     left: 50%;
     transform: translateX(-50%);
+    width: 100px;
+    height: auto;
     z-index: 1004;
 }
-
 
 #calendar {
     margin-top: 20px;
