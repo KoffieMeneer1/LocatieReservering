@@ -135,14 +135,14 @@ eventClick: async function(info) {
     const strongStart = document.createElement('strong');
     strongStart.textContent = 'Start:';
     pStart.appendChild(strongStart);
-    pStart.appendChild(document.createTextNode(' ' + toMySQLDateTimeWithTZ(start_utc, 'Europe/Amsterdam', -2)));
+    pStart.appendChild(document.createTextNode(' ' + toMySQLDateTimeWithTZ(start_utc, 'Europe/Amsterdam', -1)));
     card.appendChild(pStart);
 
     const pEnd = document.createElement('p');
     const strongEnd = document.createElement('strong');
     strongEnd.textContent = 'Eind:';
     pEnd.appendChild(strongEnd);
-    pEnd.appendChild(document.createTextNode(' ' + toMySQLDateTimeWithTZ(end_utc, 'Europe/Amsterdam', -2)));
+    pEnd.appendChild(document.createTextNode(' ' + toMySQLDateTimeWithTZ(end_utc, 'Europe/Amsterdam', -`1`)));
     card.appendChild(pEnd);
 
     const pLocation = document.createElement('p');
@@ -236,8 +236,8 @@ const deleteReservation = async (start, end, location, contactpersoon) => {
     // Wintertijd: -2, Zomertijd -1, Laatste zondag maart = zomertijd gaat in, Laatste zondag oktober = wintertijd gaat in
     const startDate = new Date(start);
     const endDate = new Date(end);
-    const startCorrected = new Date(startDate.getTime() - 2 * 60 * 60 * 1000);
-    const endCorrected = new Date(endDate.getTime() - 2 * 60 * 60 * 1000);
+    const startCorrected = new Date(startDate.getTime() - 1 * 60 * 60 * 1000);
+    const endCorrected = new Date(endDate.getTime() - 1 * 60 * 60 * 1000);
 
     // Format naar MySQL datetime in juiste tijdzone
     const startMySQL = toMySQLDateTimeWithTZ(startCorrected);
