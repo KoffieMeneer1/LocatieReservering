@@ -123,17 +123,9 @@ hr {
     top: 10px;
     left: 50%;
     transform: translateX(-50%);
-    width: 100px;
+    z-index: 1004;
 }
 
-.logo-fixed {
-    position: fixed !important;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2147483000;
-    pointer-events: auto;
-}
 
 #calendar {
     margin-top: 20px;
