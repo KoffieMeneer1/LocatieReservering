@@ -21,7 +21,7 @@ function toMySQLDateTimeWithTZ(dateStr, timeZone = 'Europe/Amsterdam', hourCorre
 }
 
 const locationImages = {
-    'De Peel 4p': '/images/De_Peel_4p.ico',
+    'De Peel 4p': '/images/De_Peel_4p.jpg',
     'De Kasteeltuin 8p': '/images/De_Kasteeltuin_8p.jpg',
     'Auditorium': '/images/Auditorium.jpg',
     'Huiskamer': '/images/Huiskamer.jpg',
