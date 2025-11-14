@@ -20,12 +20,36 @@ function toMySQLDateTimeWithTZ(dateStr, timeZone = 'Europe/Amsterdam', hourCorre
     return `${getPart('year')}-${getPart('month')}-${getPart('day')} ${getPart('hour')}:${getPart('minute')}:${getPart('second')}`;
 }
 
+const locationImages = {
+    'De Peel 4p': '/images/De_Peel_4p.ico',
+    'De Kasteeltuin 8p': '/images/De_Kasteeltuin_8p.jpg',
+    'Auditorium': '/images/Auditorium.jpg',
+    'Huiskamer': '/images/Huiskamer.jpg',
+    'De Windmolen 10p': '/images/De_Windmolen_10p.jpg'
+};
+
+function updateLocationImage() {
+    const locationSelect = document.getElementById('location');
+    const selectedLocation = locationSelect.value;
+    const imageContainer = document.getElementById('location-images-container');
+    const locationImage = document.getElementById('location-image');
+    
+    if (selectedLocation && locationImages[selectedLocation]) {
+        locationImage.src = locationImages[selectedLocation];
+        locationImage.alt = `Foto van ${selectedLocation}`;
+        imageContainer.style.display = 'block';
+    } else {
+        imageContainer.style.display = 'none';
+    }
+}
+
 
     const reservationForm = document.getElementById('reservation-form');
     const calendarEl = document.getElementById('calendar');
     const welcomeEl = document.getElementById('welcome');
     const contactInput = document.getElementById('contactperson');
     const logoutBtn = document.getElementById('logout-btn');
+    const locationSelect = document.getElementById('location');
 
     function fillNameFromKeycloak(){
         try{
@@ -45,6 +69,13 @@ function toMySQLDateTimeWithTZ(dateStr, timeZone = 'Europe/Amsterdam', hourCorre
     // Try immediately and also on authenticated event
     fillNameFromKeycloak();
     window.addEventListener('authenticated', fillNameFromKeycloak);
+
+    // Event listener for location selection to show/hide location image
+    if (locationSelect) {
+        locationSelect.addEventListener('change', updateLocationImage);
+        // Initialize image on page load if a location is already selected
+        updateLocationImage();
+    }
 
     // Logout button behavior
     if(logoutBtn){
